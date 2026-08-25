@@ -20,9 +20,9 @@ export const site = {
 
   tagline: 'افضل شركة حماية سيارات في السعودية',
 
-  phone: '0560087412',
+  phone: '0561266685',
   /** International form, digits only — this is what wa.me expects. */
-  whatsapp: '966560087412',
+  whatsapp: '966561266685',
   /** TODO: confirm the real production mailbox — placeholder pending client sign-off. */
   email: 'info@3mmile.sa',
   hours: 'خدمة 24 س/7 أيام',

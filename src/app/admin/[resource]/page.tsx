@@ -37,7 +37,8 @@ export default async function AdminResourcePage({
             : 'التغييرات تظهر على الموقع خلال دقيقة من الحفظ.'}
         </p>
       </header>
-      <ResourceManager config={config} />
+      {/* The key, not the config: it holds RegExps, which cannot cross to a client component. */}
+      <ResourceManager resourceKey={resource} />
     </>
   );
 }

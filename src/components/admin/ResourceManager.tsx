@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ResourceConfig } from '@/lib/admin/resources';
-import { fieldLabels } from '@/lib/admin/resources';
+import { fieldLabels, findResource } from '@/lib/admin/resources';
 import { apiUrl, sendForm, sendJson } from '@/lib/api/client';
 import { clearSession, getToken } from '@/lib/admin/auth';
 import {
@@ -18,13 +17,24 @@ import { ResourceForm } from './ResourceForm';
  *
  * Handles both API shapes: a COLLECTION (list, POST, PUT /:id, DELETE /:id) and a
  * SINGLETON (one document, PUT only — nothing to add or remove).
+ *
+ * TAKES THE RESOURCE KEY, NOT THE CONFIG OBJECT
+ *
+ * The config carries `pattern.test` RegExps (see SLUG_FIELD), and a RegExp cannot cross
+ * the server/client boundary — React refuses to serialize it and the whole screen dies
+ * with "Only plain objects ... can be passed to Client Components". Looking the config
+ * up here instead costs nothing, because `resources.ts` is already in the client bundle
+ * (AdminShell and ResourceForm import it directly), and it keeps every future
+ * non-serializable value in a config from breaking the dashboard the same way.
  */
 
 type Row = Record<string, unknown>;
 
 const EMPTY_ERROR: TranslatedError = { message: '', fields: {} };
 
-export function ResourceManager({ config }: { config: ResourceConfig }) {
+export function ResourceManager({ resourceKey }: { resourceKey: string }) {
+  // Non-null in practice: the page 404s on an unknown key before rendering this.
+  const config = findResource(resourceKey)!;
   const isSingleton = config.kind === 'singleton';
   const labels = useMemo(() => fieldLabels(config), [config]);
 

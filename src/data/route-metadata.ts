@@ -40,7 +40,7 @@ const STATIC: Record<string, Metadata> = {
   contact: {
     title: 'تواصل معنا',
     description:
-      'تواصل مع فريق 3M مايل — الجوال 0560087412، البريد info@3mmile.sa، خدمة 24 ساعة طوال أيام الأسبوع.',
+      'تواصل مع فريق 3M مايل — الجوال 0561266685، البريد info@3mmile.sa، خدمة 24 ساعة طوال أيام الأسبوع.',
     ...canonical('/تواصل-معنا'),
   },
   faq: {

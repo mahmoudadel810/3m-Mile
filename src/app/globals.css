@@ -5,7 +5,7 @@
 
 html {
   scroll-behavior: smooth;
-  /* The site keeps Western digits throughout (0560087412, 2026/08/07, 5.0) — the
+  /* The site keeps Western digits throughout (0561266685, 2026/08/07, 5.0) — the
      reference theme ships a class to disable it. Preserve that. */
   font-variant-numeric: lining-nums;
 }
