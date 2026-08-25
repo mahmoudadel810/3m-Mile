@@ -1,0 +1,106 @@
+/**
+ * Design tokens. Every value here is measured from the reference site.
+ *
+ * The source site has no design system: 32 unconnected <style> blocks each redeclare
+ * their own scoped variables, and the brand red exists in five near-identical values
+ * (#EB1C2B, #E31B23, #D5151E, #D71921, #FF0000). This file is the single source of
+ * truth that replaces all of them.
+ */
+
+@theme {
+  /* ---------------------------------------------------------------- brand */
+  --color-primary: #e31b23;
+  --color-primary-strong: #d5151e; /* footer links, pressed states */
+  --color-primary-soft: rgb(227 27 35 / 0.05);
+
+  /* ------------------------------------------------------------- surfaces */
+  /* The site is black-first. There is no light theme and no toggle. */
+  --color-ink: #000000;
+  --color-surface: #111111; /* review track, footer submenu */
+  --color-surface-2: #1a1a1a; /* social chips */
+  --color-surface-3: #1b1b1b; /* mobile drawer */
+
+  --color-glass: rgb(255 255 255 / 0.03);
+  --color-glass-strong: rgb(255 255 255 / 0.15);
+  --color-line: rgb(255 255 255 / 0.1);
+  --color-line-soft: rgb(255 255 255 / 0.05);
+
+  /* ------------------------------------------------------------------ text */
+  --color-fg: #ffffff;
+  --color-fg-muted: #cccccc;
+  --color-fg-dim: #777777;
+
+  /* --------------------------------------------------------------- utility */
+  --color-whatsapp: #25d366;
+  --color-star: #f4b400;
+
+  /* ------------------------------------------------------------------ type */
+  /* Cairo covers Arabic and Latin, so mixed Arabic/Latin strings
+     render in one family. Wired up by next/font in layout.tsx. */
+  --font-sans: var(--font-cairo), system-ui, sans-serif;
+
+  /* Fluid scale replacing the site's three separate per-breakpoint overrides. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: clamp(1.05rem, 0.95rem + 0.5vw, 1.2rem); /* card H3 */
+  --text-2xl: clamp(1.15rem, 1rem + 0.75vw, 1.375rem); /* H4 */
+  --text-3xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem); /* secondary H2 */
+  --text-4xl: clamp(1.8rem, 1.4rem + 2vw, 2.2rem); /* section H2 */
+  --text-stat: clamp(1.5rem, 1rem + 5vw, 3.5rem); /* 15 / 25K / 250 */
+
+  /* ---------------------------------------------------------------- radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-pill: 50px;
+
+  /* --------------------------------------------------------------- shadows */
+  --shadow-card: 0 5px 15px rgb(0 0 0 / 0.3);
+  --shadow-deep: 0 10px 40px rgb(0 0 0 / 0.5);
+  --shadow-header: 0 4px 30px rgb(0 0 0 / 0.1);
+  --shadow-cta: 0 4px 15px rgb(227 27 35 / 0.3);
+  --shadow-whatsapp: 0 6px 20px rgb(37 211 102 / 0.4);
+
+  /* ---------------------------------------------------------------- motion */
+  /* 0.3s is the site's universal --transition-speed. */
+  --ease-drawer: cubic-bezier(0.77, 0.2, 0.05, 1);
+  --ease-out-expo: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* ----------------------------------------------------------- breakpoints */
+  /* The source uses seven inconsistent breakpoints (380/576/768/992/1024/1440) and
+     even collides at 768. Standardised to four; 992 is the load-bearing one, where
+     navigation switches between drawer and horizontal menu. */
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1280px;
+}
+
+/* Values that are not Tailwind utilities — read directly in component CSS. */
+:root {
+  --dur-fast: 0.3s;
+  --dur-slow: 0.5s;
+  --dur-slower: 0.8s;
+
+  --header-bg: rgb(0 0 0 / 0.45);
+  --header-bg-scrolled: rgb(0 0 0 / 0.5);
+  --header-blur: 5px;
+  --header-blur-scrolled: 20px;
+
+  /* Measured from the real header rather than the source site's hard-coded
+     `body { padding-top: 90px }` guess. Updated at runtime by SiteHeader. */
+  --header-height: 74px;
+
+  --overlay-scrim: rgb(0 0 0 / 0.4);
+  --overlay-menu: rgb(0 0 0 / 0.6);
+
+  /* Container widths, all at width:95% on the source site. */
+  --container-narrow: 1100px;
+  --container: 1200px;
+  --container-wide: 1400px;
+}

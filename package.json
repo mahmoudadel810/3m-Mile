@@ -1,0 +1,29 @@
+{
+  "name": "3m-mile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "3M Mile — Arabic/RTL car protection site, rebuilt in Next.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.5.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "playwright": "^1.62.1",
+    "sharp": "^0.34.3",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2"
+  }
+}

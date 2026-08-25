@@ -1,0 +1,529 @@
+@import 'tailwindcss';
+@import '../styles/tokens.css';
+
+/* ---------------------------------------------------------------- base */
+
+html {
+  scroll-behavior: smooth;
+  /* The site keeps Western digits throughout (0560087412, 2026/08/07, 5.0) — the
+     reference theme ships a class to disable it. Preserve that. */
+  font-variant-numeric: lining-nums;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Fixed header offset. The source hard-codes `padding-top: 90px`; we measure instead. */
+body {
+  padding-top: var(--header-height);
+}
+
+/* Locked while the mobile drawer or the promo modal is open. */
+body[data-scroll-locked='true'] {
+  overflow: hidden;
+}
+
+/* The source site has no visible focus styling anywhere. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Directional glyphs (chevrons, "read more" arrows) mirror under RTL.
+   Never applied to logos, play buttons, or the car. */
+[dir='rtl'] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* ------------------------------------------------- looping animations */
+/*
+ * The five infinite loops that give the site its "alive" feel. Every element using
+ * one carries `data-loop-animation` so the reduced-motion block below can stop them
+ * all without hunting for class names.
+ */
+
+/* Mobile booking pill. */
+@keyframes pulse-scale {
+  0%,
+  100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Car scroll-to-top: gentle hover. */
+@keyframes car-float {
+  0%,
+  100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Car exhaust plume, driven on two pseudo-elements. */
+@keyframes car-exhaust {
+  0% { width: 12px; height: 40px; opacity: 0.5; }
+  50% { width: 18px; height: 80px; opacity: 0.7; }
+  100% { width: 25px; height: 130px; opacity: 0.9; }
+}
+
+/* WhatsApp button wiggle. */
+@keyframes fab-wiggle-wide {
+  0%,
+  100% { transform: rotate(0deg); }
+  50% { transform: rotate(25deg); }
+}
+
+/* Phone button wiggle — a slightly smaller arc on the source site. */
+@keyframes fab-wiggle {
+  0%,
+  100% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+}
+
+/* Expanding rings behind the WhatsApp button. */
+@keyframes fab-ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+/* --------------------------------------------------- floating buttons */
+
+:root {
+  /* Source: 25px desktop, 15px mobile, from each viewport's outer edge. */
+  --fab-inset: 15px;
+  /* The car parks 120px beyond the inline-start edge while hidden. */
+  --car-hidden-shift: translateX(145px);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --fab-inset: 25px;
+  }
+}
+
+[dir='ltr'] {
+  --car-hidden-shift: translateX(-145px);
+}
+
+/*
+ * Two exhaust plumes trailing the car. Kept in CSS rather than markup because they are
+ * decorative pseudo-elements on the source site too — there is nothing here for a
+ * screen reader to announce.
+ */
+.car-exhaust {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.car-exhaust::before,
+.car-exhaust::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 12px;
+  height: 0;
+  background: linear-gradient(
+    to top,
+    rgb(255 255 180 / 0.9) 0%,
+    rgb(255 255 240 / 0.2) 60%,
+    transparent 100%
+  );
+  filter: blur(5px);
+  opacity: 0.8;
+  border-radius: 50% 50% 0 0;
+  transform-origin: bottom center;
+  animation: car-exhaust 2s infinite alternate;
+}
+
+.car-exhaust::before {
+  left: 8px;
+  transform: rotate(-6deg);
+}
+
+.car-exhaust::after {
+  right: 8px;
+  transform: rotate(6deg);
+}
+
+/* ---------------------------------------------------------- marquee */
+/*
+ * Partner logo strip. CSS-only: the track holds two identical groups and slides by
+ * exactly half its width, so the loop is seamless.
+ */
+
+.marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 45s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-group {
+  display: flex;
+  gap: 15px;
+  padding-inline: 7.5px;
+  list-style: none;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Under RTL the visual reading order reverses, so the track travels the other way. */
+[dir='rtl'] .marquee-track {
+  animation-name: marquee-scroll-rtl;
+}
+
+@keyframes marquee-scroll-rtl {
+  from { transform: translateX(0); }
+  to { transform: translateX(50%); }
+}
+
+/* ------------------------------------------------------- scroll reveal */
+/* The one motion behaviour the source site lacks entirely: sections currently
+   just appear. Progressive — content is visible if JS never runs. */
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity var(--dur-slow) ease-out,
+      transform var(--dur-slow) ease-out;
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  [data-reveal='shown'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ----------------------------------------------------- reduced motion */
+/* Several animations loop forever (WhatsApp wiggle, phone wiggle, book-button pulse). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Stop the infinite loops outright while keeping the elements visible. */
+  [data-loop-animation],
+  [data-loop-animation]::before,
+  [data-loop-animation]::after {
+    animation: none !important;
+  }
+
+  /* Never leave revealed content stuck at opacity 0. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ------------------------------------------------- article & product body */
+/*
+ * Styling for CMS body HTML injected via dangerouslySetInnerHTML.
+ *
+ * The API sanitises the markup to a small tag allow-list, so these rules are what dress
+ * it — in design-system tokens rather than per-article styles. The legacy class names
+ * (.cb-*, .cs-ai-*, .sc_fs_faq, .rv-*) are kept so imported bodies still render.
+ */
+.post-body {
+  font-size: 1rem;
+  line-height: 2;
+  color: var(--color-fg-muted);
+}
+
+.post-body > :first-child {
+  margin-block-start: 0;
+}
+
+.post-body p {
+  margin-block: 0 1.25rem;
+}
+
+.post-body h2,
+.post-body h3,
+.post-body h4 {
+  margin-block: 2rem 0.85rem;
+  font-weight: 900;
+  line-height: 1.35;
+  color: var(--color-fg);
+  text-wrap: balance;
+}
+
+.post-body h2 {
+  font-size: 1.6rem;
+}
+.post-body h3 {
+  font-size: 1.28rem;
+}
+.post-body h4 {
+  font-size: 1.1rem;
+}
+
+.post-body a {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  transition: color 0.25s;
+}
+
+.post-body a:hover {
+  color: var(--color-fg);
+}
+
+.post-body strong,
+.post-body b {
+  color: var(--color-fg);
+  font-weight: 800;
+}
+
+.post-body ul,
+.post-body ol {
+  margin-block: 0 1.25rem;
+  padding-inline-start: 1.5rem;
+}
+
+.post-body ul {
+  list-style: disc;
+}
+.post-body ol {
+  list-style: decimal;
+}
+
+.post-body li {
+  margin-block-end: 0.5rem;
+}
+
+.post-body li::marker {
+  color: var(--color-primary);
+}
+
+.post-body img {
+  height: auto;
+  max-width: 100%;
+  margin-block: 1.5rem;
+  border-radius: var(--radius-lg);
+}
+
+.post-body img.aligncenter {
+  display: block;
+  margin-inline: auto;
+}
+
+.post-body hr {
+  margin-block: 2rem;
+  border: 0;
+  border-block-start: 1px solid var(--color-line);
+}
+
+/*
+ * Tables carry a fixed pixel `height` in the source that breaks them below 500px. The
+ * attribute is stripped; the wrapper here is what stops a wide table forcing the whole
+ * page to scroll sideways on a phone.
+ */
+.post-body table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  margin-block: 1.5rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.post-body th,
+.post-body td {
+  min-width: 9rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-line);
+  text-align: start;
+  vertical-align: top;
+}
+
+.post-body thead th,
+.post-body tr:first-child td {
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+  font-weight: 800;
+}
+
+/* YouTube embeds ship fixed 500x281 attributes; this is the responsive wrapper. */
+.post-embed {
+  display: block;
+  position: relative;
+  margin-block: 1.5rem;
+  padding-block-end: 56.25%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.post-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* FAQ cards from the schema plugin — <section class="sc_fs_faq sc_card">. */
+.post-body .sc_fs_faq {
+  margin-block: 0 0.85rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-glass);
+}
+
+.post-body .sc_fs_faq h3 {
+  margin-block: 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.post-body .sc_fs_faq p {
+  margin-block-end: 0;
+}
+
+/* Inline call / WhatsApp buttons the editor drops into article bodies. */
+.post-body .cb-w {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-block: 1.75rem;
+}
+
+.post-body .cb-b {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.25s;
+}
+
+.post-body .cb-b:hover {
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.post-body .cb-call {
+  background: var(--color-primary);
+}
+
+.post-body .cb-wa {
+  background: #25d366;
+}
+
+.post-body .cb-b svg {
+  width: 1.15em;
+  height: 1.15em;
+  fill: currentColor;
+}
+
+/* The AI-summary links inside a post body. */
+.post-body .cs-ai-tools-container {
+  margin-block: 1.75rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+  text-align: center;
+}
+
+.post-body .cs-ai-title {
+  margin-block: 0 0.85rem;
+  font-size: 1rem;
+}
+
+.post-body .cs-ai-buttons-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.post-body .cs-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-glass);
+  color: var(--color-fg);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.post-body .cs-ai-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.post-body .cs-ai-icon svg,
+.post-body .cs-ai-btn svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+/*
+ * The Google-review widget embedded in four articles. Its slider script is stripped, so
+ * the cards render as a static wrapping row instead of a carousel — the same content,
+ * without 60 lines of DOM-querying JavaScript per article.
+ */
+.post-body .cs-reviews-widget {
+  margin-block: 1.75rem;
+}
+
+.post-body .rv-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.post-body .rv-card {
+  flex: 1 1 15rem;
+  padding: 1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-glass);
+}
+
+.post-body .rv-img img {
+  margin-block: 0;
+}
