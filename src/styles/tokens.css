@@ -93,8 +93,9 @@
   --header-blur-scrolled: 20px;
 
   /* Measured from the real header rather than the source site's hard-coded
-     `body { padding-top: 90px }` guess. Updated at runtime by SiteHeader. */
-  --header-height: 74px;
+     `body { padding-top: 90px }` guess. Updated at runtime by SiteHeader. This is only
+     now height-bound at 40px/32px, so the real header settles well under this). */
+  --header-height: 64px;
 
   --overlay-scrim: rgb(0 0 0 / 0.4);
   --overlay-menu: rgb(0 0 0 / 0.6);

@@ -5,20 +5,10 @@ import { mapService, type ApiService } from '@/lib/api/dto';
  * The services — one record each, consumed by three different surfaces: the homepage
  * hero grid slider, the services index, and each detail page.
  *
- * API SEAM — these were eight hard-coded records; they are now CMS documents. The shape
- * is unchanged so no component changed with them.
- *
- * WHY THE IMAGE FIELDS ARE STILL PLAIN STRINGS
- *
- * Each is a URL, exactly as before, because components pass them straight to an image
- * (`src={service.heroImage}`). The backend stores each slot as `{url, publicId, alt}`;
- * flattening to the URL here keeps every call site untouched. Empty string means "the
- * admin has not uploaded this yet" — `CmsImage` renders a placeholder of the same size
- * rather than throwing.
- *
- * The four slots are NAMED on the backend too, not positions in a gallery array. The
- * detail page has four differently-shaped containers, so "index 2" is not a meaningful
- * identity for the wide banner — see service.model.js.
+ * API SEAM — the backend stores each image slot as `{url, publicId, alt}`; it is
+ * flattened to the URL here, and an empty string means not uploaded yet (`CmsImage`
+ * renders a placeholder). The four slots are named, not gallery positions, because the
+ * detail page has four differently shaped containers.
  */
 
 export type Service = {

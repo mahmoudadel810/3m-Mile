@@ -31,13 +31,25 @@ export function ReelCarousel({ reels }: { reels: Reel[] }) {
             <li key={reel.id} className="w-full shrink-0 px-2 sm:w-1/2 lg:w-1/3">
               <div className="relative mx-auto aspect-[9/16] w-full max-w-[300px] overflow-hidden rounded-[var(--radius-lg)] bg-surface">
                 {playing === reel.id ? (
-                  <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${reel.id}?autoplay=1&rel=0&playsinline=1`}
-                    title={reel.title}
-                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute inset-0 size-full border-0"
-                  />
+                  reel.kind === 'youtube' ? (
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${reel.id}?autoplay=1&rel=0&playsinline=1`}
+                      title={reel.title}
+                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="absolute inset-0 size-full border-0"
+                    />
+                  ) : (
+                    <video
+                      src={reel.src}
+                      poster={reel.poster || undefined}
+                      title={reel.title}
+                      controls
+                      autoPlay
+                      playsInline
+                      className="absolute inset-0 size-full object-cover"
+                    />
+                  )
                 ) : (
                   <button
                     type="button"
@@ -46,15 +58,34 @@ export function ReelCarousel({ reels }: { reels: Reel[] }) {
                     tabIndex={i >= c.index && i < c.index + 3 ? 0 : -1}
                     className="group absolute inset-0 size-full"
                   >
-                    {/* Thumbnail comes from YouTube's CDN — a plain <img>, since it is
-                        an external host and next/image would need a remote pattern. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`https://img.youtube.com/vi/${reel.id}/hqdefault.jpg`}
-                      alt=""
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                    {/* Facade thumbnail: YouTube CDN, the uploaded poster, or the video's first frame. */}
+                    {reel.kind === 'youtube' ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={`https://img.youtube.com/vi/${reel.id}/hqdefault.jpg`}
+                        alt=""
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : reel.poster ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={reel.poster}
+                        alt=""
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <video
+                        src={reel.src}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                        className="pointer-events-none size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    )}
                     <span
                       aria-hidden="true"
                       className="absolute inset-0 bg-[linear-gradient(to_top,rgb(0_0_0/0.9),transparent_55%)]"

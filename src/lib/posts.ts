@@ -68,7 +68,13 @@ export async function getLatestPosts(limit: number): Promise<PostSummary[]> {
 /** @endpoint GET /api/v1/blog-posts/slug/{slug} — full post including body HTML. */
 export async function getPost(slug: string): Promise<Post | undefined> {
   const post = await apiGet<ApiBlogPost>(`/blog-posts/slug/${encodeURIComponent(slug)}`);
-  return post ? mapPost(post) : undefined;
+  if (!post) return undefined;
+
+  // The API does not filter drafts on this endpoint. Not found, not 403, so draft slugs
+  // are not discoverable.
+  if (post.isPublished === false) return undefined;
+
+  return mapPost(post);
 }
 
 /**

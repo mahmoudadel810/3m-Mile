@@ -162,19 +162,32 @@ body[data-scroll-locked='true'] {
 
 /* ---------------------------------------------------------- marquee */
 /*
- * Partner logo strip. CSS-only: the track holds two identical groups and slides by
- * exactly half its width, so the loop is seamless.
+ * Partner logo strip, matching the source's `.sp-slider-track`. The track holds two
+ * identical groups and slides by one group plus one gap. One group must be wider than
+ * this element or the loop shows bare background; `PartnerStrip` repeats the list to
+ * guarantee that and sets `--marquee-duration` from the resulting width.
  */
 
 .marquee {
+  --marquee-gap: 15px;
+  /* Forced LTR: the animation assumes one direction. */
+  direction: ltr;
   overflow: hidden;
-  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  padding-block: 20px;
+}
+
+@media (min-width: 768px) {
+  .marquee {
+    --marquee-gap: 20px;
+  }
 }
 
 .marquee-track {
   display: flex;
+  gap: var(--marquee-gap);
   width: max-content;
-  animation: marquee-scroll 45s linear infinite;
+  animation: marquee-scroll var(--marquee-duration, 40s) linear infinite;
+  will-change: transform;
 }
 
 .marquee:hover .marquee-track {
@@ -183,24 +196,14 @@ body[data-scroll-locked='true'] {
 
 .marquee-group {
   display: flex;
-  gap: 15px;
-  padding-inline: 7.5px;
+  gap: var(--marquee-gap);
   list-style: none;
 }
 
+/* Travel is one group plus one gap: the track is `2G + gap` wide, so 50% is half a gap short. */
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-/* Under RTL the visual reading order reverses, so the track travels the other way. */
-[dir='rtl'] .marquee-track {
-  animation-name: marquee-scroll-rtl;
-}
-
-@keyframes marquee-scroll-rtl {
-  from { transform: translateX(0); }
-  to { transform: translateX(50%); }
+  to { transform: translateX(calc(-50% - var(--marquee-gap) / 2)); }
 }
 
 /* ------------------------------------------------------- scroll reveal */

@@ -41,14 +41,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
       },
     ],
   },
-  {
-    title: 'خدماتنا',
-    items: [
-      { label: 'افلام حماية PPF', href: '/خدمات/أفلام-حماية-ppf' },
-      { label: 'تظليل سيارات', href: '/خدمات/تظليل-سيارات-عازل-حراري' },
-      { label: 'تظليل مباني', href: '/خدمات/تظليل-مباني' },
-    ],
-  },
+  // The «خدماتنا» column is built by `SiteFooter` from the CMS services.
   {
     title: 'معلومات',
     items: [

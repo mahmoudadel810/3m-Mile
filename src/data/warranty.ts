@@ -2,13 +2,8 @@ import { apiList } from '@/lib/api/client';
 import { mapWarrantyGroup, type ApiWarrantyGroup } from '@/lib/api/dto';
 
 /**
- * Warranty policy.
- *
- * The source site renders this page as a self-contained JavaScript app: a `TERMS_DB`
- * object and a `SERVICES` array inside an inline <script> that builds the tabs at
- * runtime. None of the warranty terms exist in the served HTML, so search engines and
- * screen readers see an empty page. Here the tabs stay but the content ships in the
- * HTML — that is why this is fetched server-side and rendered as real markup.
+ * Warranty policy. Fetched server-side so the terms ship in the HTML for search engines
+ * and screen readers.
  *
  * API SEAM — one `WarrantyGroup` document per tab, each holding its coverage tiers.
  *

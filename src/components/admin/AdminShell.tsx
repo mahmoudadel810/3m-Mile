@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { NAV_GROUPS, findResource } from '@/lib/admin/resources';
 import { clearSession, getUser, type AdminUser } from '@/lib/admin/auth';
+import { confirmDiscardChanges } from '@/lib/admin/unsavedGuard';
 
 /**
  * Dashboard chrome: sidebar, header, sign-out.
@@ -16,10 +17,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // getUser() reads localStorage, which the server render cannot see — reading it
-  // during render made the server HTML (no user name) disagree with the client's
-  // first render (name present) and threw a hydration error on every admin page.
-  // Reading it after mount keeps both first renders identical.
+  // Read localStorage after mount so server and client first renders match.
   const [user, setUser] = useState<AdminUser | null>(null);
   useEffect(() => {
     setUser(getUser());
@@ -30,6 +28,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = () => {
+    if (!confirmDiscardChanges()) return;
     clearSession();
     router.replace('/admin/login');
   };
@@ -38,7 +37,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-ink text-fg">
       <header className="flex items-center justify-between border-b border-line px-5 py-3">
         <div className="flex items-center gap-4">
-          <Link href="/admin" className="text-lg font-bold text-primary">لوحة التحكم</Link>
+          <Link
+            href="/admin"
+            onClick={(e) => {
+              if (!confirmDiscardChanges()) e.preventDefault();
+            }}
+            className="text-lg font-bold text-primary"
+          >
+            لوحة التحكم
+          </Link>
           {/* An explicit way back to the live site — the admin needs to check their work. */}
           <Link href="/" target="_blank" className="text-sm text-fg-muted underline">
             عرض الموقع ↗
@@ -53,11 +60,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 lg:flex-row">
-        {/* Sticky on desktop only — a fixed column would eat the mobile viewport. */}
-        <nav aria-label="أقسام لوحة التحكم" className="lg:sticky lg:top-5 lg:h-fit lg:w-60 lg:shrink-0">
+        <nav
+          aria-label="أقسام لوحة التحكم"
+          className="border-b border-primary/40 pb-4 lg:sticky lg:top-5 lg:h-fit lg:w-60 lg:shrink-0 lg:border-b-0 lg:border-e lg:pb-0 lg:pe-4"
+        >
           {NAV_GROUPS.map((group) => (
             <div key={group.title} className="mb-5">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-fg-dim">{group.title}</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-fg-dim" style={{ color: 'red' }}>{group.title}</p>
               <ul className="space-y-1">
                 {group.keys.map((key) => {
                   const resource = findResource(key);
@@ -68,6 +77,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     <li key={key}>
                       <Link
                         href={href}
+                        onClick={(e) => {
+                          if (!confirmDiscardChanges()) e.preventDefault();
+                        }}
                         aria-current={active ? 'page' : undefined}
                         className={`block rounded-[var(--radius-sm)] px-3 py-1.5 text-sm ${
                           active ? 'bg-primary font-bold text-white' : 'text-fg-muted hover:bg-glass'

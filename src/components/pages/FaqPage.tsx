@@ -2,6 +2,7 @@ import { getFaq } from '@/data/faq';
 import { PageHero } from '@/components/layout/PageHero';
 import { Accordion } from '@/components/ui/Accordion';
 import { Reveal } from '@/components/ui/Reveal';
+import { jsonLdHtml } from '@/lib/safe';
 
 /**
  * FAQ. The answers are rendered into the HTML and also emitted as FAQPage structured
@@ -25,7 +26,7 @@ export async function FaqPage() {
     <main id="main">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <PageHero title="الأسئلة الشائعة" crumbs={[{ label: 'الأسئلة الشائعة' }]} />

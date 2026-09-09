@@ -1,11 +1,19 @@
 import { getReels, getVideoGalleryIntro } from '@/data/gallery';
-import { bookingLink } from '@/lib/whatsapp';
+import { getHomeSections } from '@/data/home';
+import { getSiteSettings } from '@/data/settings';
+import { bookingLinkFor } from '@/lib/whatsapp';
 import { PageHero } from '@/components/layout/PageHero';
 import { ReelCarousel } from '@/components/gallery/ReelCarousel';
 import { Reveal } from '@/components/ui/Reveal';
 
 export async function VideoGalleryPage() {
-  const [reels, videoGalleryIntro] = await Promise.all([getReels(), getVideoGalleryIntro()]);
+  const [reels, videoGalleryIntro, sections, settings] = await Promise.all([
+    getReels(),
+    getVideoGalleryIntro(),
+    getHomeSections(),
+    getSiteSettings(),
+  ]);
+  const bookingLink = bookingLinkFor(settings.whatsappNumber);
 
   return (
     <main id="main">
@@ -23,7 +31,7 @@ export async function VideoGalleryPage() {
             </p>
           </Reveal>
 
-          <ReelCarousel reels={reels} />
+          {reels.length > 0 && <ReelCarousel reels={reels} />}
 
           <Reveal>
             <a
@@ -32,7 +40,7 @@ export async function VideoGalleryPage() {
               rel="noopener noreferrer"
               className="mt-10 inline-block rounded-[var(--radius-md)] bg-primary px-8 py-3 font-bold text-white transition-colors duration-300 hover:bg-white hover:text-primary"
             >
-              احجز الآن
+              {sections.ctaLabel || 'احجز الآن'}
             </a>
           </Reveal>
         </div>

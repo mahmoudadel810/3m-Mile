@@ -8,22 +8,22 @@ import { waLink } from '@/lib/whatsapp';
 import { useDismissable } from '@/hooks/useDismissable';
 import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
+import { resolveDelay } from '@/lib/promo/resolveDelay';
 
 /**
  * Timed promotional overlay.
  *
- * Timing and suppression rules are the source's: 5s on the homepage, 15s elsewhere,
- * never on the landing pages, thank-you page, branches or info routes.
+ * Suppression rules are the source's: never on the landing pages, thank-you page,
+ * branches or info routes. The delay is one CMS value for the whole site
+ * (`Promo.delayMs`, default 3s via `resolveDelay`).
  *
- * Fixed here: the source disables its own close button and offer link with
- * `tabindex="-1"` — a workaround for a console warning that makes the popup completely
- * unusable by keyboard. It also re-opens on every navigation. This version traps focus
- * properly and remembers dismissal for the session.
+ * The close button and offer link are keyboard-reachable, focus is trapped while open,
+ * and dismissal is remembered for the session.
  */
 const SUPPRESSED = ['landing-page', 'thank-you', 'branches', 'info', 'فروعنا'];
 const STORAGE_KEY = 'cs-promo-dismissed';
 
-export function PromoModal({ promo }: { promo: Promo | null }) {
+export function PromoModal({ promo, whatsappNumber }: { promo: Promo | null; whatsappNumber: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -47,7 +47,7 @@ export function PromoModal({ promo }: { promo: Promo | null }) {
       /* ignore */
     }
 
-    const delay = pathname === '/' ? 5000 : 15000;
+    const delay = resolveDelay(promo.delayMs);
     const t = setTimeout(() => setOpen(true), delay);
     return () => clearTimeout(t);
   }, [pathname, promo]);
@@ -70,33 +70,37 @@ export function PromoModal({ promo }: { promo: Promo | null }) {
         aria-modal="true"
         aria-label={promo.alt}
         className={cn(
-          'relative max-h-[85vh] w-full max-w-[420px] transition-transform duration-300',
+          // Width matches the source; height is capped on the image so the rounded <a> is not clipped.
+          'relative w-full max-w-[880px] transition-transform duration-300',
           open ? 'scale-100' : 'scale-95'
         )}
       >
+        {/* Physical `right`, not `end`: the page is RTL and the button belongs top-right. */}
         <button
           type="button"
           onClick={close}
           aria-label="إغلاق العرض"
-          className="absolute -top-3 z-10 flex size-9 items-center justify-center rounded-full bg-white text-black shadow-[var(--shadow-card)] transition-colors hover:bg-primary hover:text-white"
-          style={{ insetInlineEnd: '-0.75rem' }}
+          className="absolute right-3 top-3 z-10 flex size-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-[4px] transition-colors hover:bg-primary"
         >
           <Icon name="close" size={18} />
         </button>
 
         <a
-          href={waLink(promo.whatsappText)}
+          href={waLink(promo.whatsappText, whatsappNumber)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={close}
           className="block overflow-hidden rounded-[var(--radius-lg)] shadow-[var(--shadow-deep)]"
         >
+          {/* `contain` plus a viewport height cap: letterbox on short screens, never crop. */}
           <CmsImage
             src={promo.image}
             alt={promo.alt}
             width={promo.width}
             height={promo.height}
-            className="h-auto w-full"
+            fit="contain"
+            sizes="(max-width: 920px) 100vw, 880px"
+            className="block h-auto max-h-[85vh] w-full"
           />
         </a>
       </div>

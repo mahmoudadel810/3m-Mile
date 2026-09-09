@@ -2,44 +2,73 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { site } from '@/data/site';
 import type { SocialLink } from '@/data/settings';
-import { footerNav } from '@/data/nav';
-import { telLink } from '@/lib/whatsapp';
+import { footerNav, type NavItem } from '@/data/nav';
 import { Icon, BrandIcon, type BrandName } from '@/components/ui/Icon';
-import { FooterMap } from './FooterMap';
 import { cn } from '@/lib/cn';
+import { safeHref } from '@/lib/safe';
+
+export type FooterService = { slug: string; title: string };
+
+/** Fallback for the footer paragraph. `site.description` is the SEO meta description, a different string. */
+const FOOTER_DESCRIPTION =
+  'مراكز 3M مايل المعتمدة في المملكة العربية السعودية، متخصصون في مجال العناية بالسيارات نلتزم بأعلى معايير الجودة وأحدث التقنيات المبتكرة في حماية السيارات وتظليل عازل حراري لنقدم خدمة متميزة لعملائنا.';
 
 /**
- * Site footer: description + branch map, four link columns, socials.
+ * Site footer: description, four link columns, socials.
  *
  * The columns behave differently by breakpoint on the source site — hover dropdowns on
  * desktop, click accordions below 992px — so the submenu is a real <button> here and
  * gets both behaviours rather than the source's `onclick="toggleMobileMenu(...)"` inline
  * handler.
  */
-export function SiteFooter({ social }: { social: SocialLink[] }) {
+export function SiteFooter({
+  social,
+  description,
+  phone,
+  email,
+  services,
+}: {
+  social: SocialLink[];
+  /** CMS footer paragraph as stored; falls back to `FOOTER_DESCRIPTION` when empty. */
+  description: string;
+  phone: string;
+  email: string;
+  /** Up to 3 services for the «خدماتنا» column; zero services renders no column. */
+  services: FooterService[];
+}) {
   const [openCol, setOpenCol] = useState<string | null>(null);
 
+  const serviceLinks: NavItem[] = services.map((s) => ({
+    label: s.title,
+    href: `/خدمات/${s.slug}`,
+  }));
+
+  // The «خدماتنا» column is inserted directly after «روابط هامة», matched by title so
+  // extra groups in nav.ts are kept.
+  const servicesColumn = serviceLinks.length ? [{ title: 'خدماتنا', items: serviceLinks }] : [];
+  const anchor = footerNav.findIndex((g) => g.title === 'روابط هامة');
+  const columns =
+    anchor === -1
+      ? [...servicesColumn, ...footerNav]
+      : [...footerNav.slice(0, anchor + 1), ...servicesColumn, ...footerNav.slice(anchor + 1)];
+  // The contact column is always the last grid child; size the grid to what is rendered.
+  const desktopCols = columns.length + 1 >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3';
+
+  // `text-start` (the right edge in RTL) keeps headings aligned with the flex link rows.
   return (
-    <footer className="bg-ink px-4 pt-4 pb-5 text-end">
-      {/* Description + map */}
-      <div className="mx-auto mb-10 grid max-w-[var(--container)] items-center gap-6 md:mb-12 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
-        <p className="px-2 text-center text-base leading-relaxed font-semibold text-[#eee] lg:px-0 lg:text-end lg:text-lg">
-          مراكز 3M مايل المعتمدة في المملكة العربية السعودية، متخصصون في مجال العناية
-          بالسيارات نلتزم بأعلى معايير الجودة وأحدث التقنيات المبتكرة في حماية السيارات
-          وتظليل عازل حراري لنقدم خدمة متميزة لعملائنا.
+    <footer className="bg-ink px-4 pt-4 pb-5 text-start">
+      <div className="mx-auto mb-10 max-w-[var(--container)] md:mb-12">
+        <p className="px-2 text-center text-base leading-relaxed font-semibold text-[#eee] lg:px-0 lg:text-lg">
+          {description || FOOTER_DESCRIPTION}
         </p>
-        <div className="mx-auto w-full lg:mx-0">
-          <FooterMap />
-        </div>
       </div>
 
       {/* Link columns */}
-      <div className="mx-auto mb-6 grid max-w-[var(--container)] grid-cols-2 gap-4 sm:gap-8 md:mb-10 lg:grid-cols-4 lg:gap-8">
-        {footerNav.map((col) => (
+      <div className={cn('mx-auto mb-6 grid max-w-[var(--container)] grid-cols-2 gap-4 sm:gap-8 md:mb-10 lg:gap-8', desktopCols)}>
+        {columns.map((col) => (
           <div key={col.title}>
-            <h2 className="relative mb-3 pb-2.5 text-lg font-bold sm:mb-5 sm:text-[22px] after:absolute after:end-0 after:bottom-0 after:h-0.5 after:w-10 after:bg-primary-strong after:content-['']">
+            <h2 className="relative mb-3 pb-2.5 text-lg font-bold sm:mb-5 sm:text-[22px] after:absolute after:start-0 after:bottom-0 after:h-0.5 after:w-10 after:bg-primary-strong after:content-['']">
               {col.title}
             </h2>
             <ul>
@@ -73,7 +102,7 @@ export function SiteFooter({ social }: { social: SocialLink[] }) {
                             'lg:invisible lg:translate-y-2.5 lg:opacity-0 lg:transition-all lg:duration-300',
                             isOpen ? 'block' : 'hidden lg:block'
                           )}
-                          style={{ insetInlineEnd: 0 }}
+                          style={{ insetInlineStart: 0 }}
                         >
                           {item.children.map((child) => (
                             <li key={child.href} className="mb-2 border-b border-[#333] pb-1.5 last:mb-0 last:border-0 last:pb-0">
@@ -110,7 +139,7 @@ export function SiteFooter({ social }: { social: SocialLink[] }) {
 
         {/* Contact column — links are tel:/mailto:, so it is not part of footerNav */}
         <div>
-          <h2 className="relative mb-3 pb-2.5 text-lg font-bold sm:mb-5 sm:text-[22px] after:absolute after:end-0 after:bottom-0 after:h-0.5 after:w-10 after:bg-primary-strong after:content-['']">
+          <h2 className="relative mb-3 pb-2.5 text-lg font-bold sm:mb-5 sm:text-[22px] after:absolute after:start-0 after:bottom-0 after:h-0.5 after:w-10 after:bg-primary-strong after:content-['']">
             تواصل معنا
           </h2>
           <ul>
@@ -121,15 +150,15 @@ export function SiteFooter({ social }: { social: SocialLink[] }) {
               </Link>
             </li>
             <li className="mb-3">
-              <a href={telLink} className="flex items-center gap-2 text-base font-semibold transition-colors hover:text-primary-strong sm:text-lg">
+              <a href={`tel:${phone}`} className="flex items-center gap-2 text-base font-semibold transition-colors hover:text-primary-strong sm:text-lg">
                 <Icon name="phone" size={15} className="text-primary-strong" />
-                <span dir="ltr">{site.phone}</span>
+                <span dir="ltr">{phone}</span>
               </a>
             </li>
             <li className="mb-3">
-              <a href={`mailto:${site.email}`} className="flex items-center gap-2 text-base font-semibold transition-colors hover:text-primary-strong sm:text-lg">
+              <a href={`mailto:${email}`} className="flex items-center gap-2 text-base font-semibold transition-colors hover:text-primary-strong sm:text-lg">
                 <Icon name="mail" size={15} className="text-primary-strong" />
-                <span dir="ltr">{site.email}</span>
+                <span dir="ltr">{email}</span>
               </a>
             </li>
           </ul>
@@ -138,17 +167,12 @@ export function SiteFooter({ social }: { social: SocialLink[] }) {
 
       {/* Payment + socials + copyright */}
       <div className="mx-auto max-w-[var(--container)] border-t border-[#222] pt-8 text-center">
-        {/*
-          The payment-methods strip was a static file and is gone. The shop takes no
-          payments — every product converts through WhatsApp — so there is nothing to
-          advertise here and the row is dropped rather than re-sourced.
-        */}
         <p className="mb-4 text-lg font-bold">تابع اخبارنا علي منصات التواصل</p>
         <div className="mb-8 flex justify-center gap-5">
           {social.map((s) => (
             <a
               key={s.name}
-              href={s.href}
+              href={safeHref(s.href)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={s.label}

@@ -6,10 +6,7 @@ import { mapPhoto, mapReel, type ApiGalleryItem } from '@/lib/api/dto';
  *
  * API SEAM — both galleries are `GalleryItem` documents, distinguished by `type`.
  *
- * The video reels are YouTube Shorts, so a reel stores an `externalId` and no uploaded
- * asset; that is why `GalleryItem.url` is only conditionally required on the backend.
- * Hosting the reels on YouTube is deliberate — it survives the platform cutover
- * untouched and keeps large video out of Cloudinary.
+ * A video reel is either a YouTube Short (`externalId`) or an uploaded file (`url`).
  *
  * The photo gallery is NOT a lightbox gallery, despite appearances: each image links to
  * a related service page. It is an internal-linking device, so `href` is admin-managed
@@ -18,7 +15,9 @@ import { mapPhoto, mapReel, type ApiGalleryItem } from '@/lib/api/dto';
  * enlarge.
  */
 
-export type Reel = { id: string; title: string; description: string };
+export type Reel =
+  | { kind: 'youtube'; id: string; title: string; description: string }
+  | { kind: 'file'; id: string; src: string; poster: string; title: string; description: string };
 
 export type PhotoItem = { src: string; alt: string; href: string };
 
@@ -32,9 +31,8 @@ type ApiGalleryIntro = {
 /** @endpoint GET /api/v1/gallery?type=video */
 export async function getReels(): Promise<Reel[]> {
   const rows = await apiList<ApiGalleryItem>('/gallery?type=video&isActive=true&limit=100');
-  // A reel with no YouTube id cannot be embedded, so it is dropped rather than
-  // rendering an empty iframe.
-  return rows.filter((g) => g.externalId).map(mapReel);
+  // An item with neither source has nothing to play.
+  return rows.filter((g) => g.externalId || g.url).map(mapReel);
 }
 
 /** @endpoint GET /api/v1/gallery-intro */

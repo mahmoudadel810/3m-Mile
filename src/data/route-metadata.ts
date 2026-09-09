@@ -3,6 +3,8 @@ import { findTopRoute, findSubRoute, decodeSlug } from './routes';
 import { getService } from './services';
 import { getVideoGalleryIntro } from './gallery';
 import { getOffersPage } from './offers';
+import { getSiteSettings } from './settings';
+import { site } from './site';
 
 /**
  * Per-route SEO metadata for the two Arabic dispatchers.
@@ -36,12 +38,6 @@ const STATIC: Record<string, Metadata> = {
     description:
       'مراكز 3M مايل المعتمدة في المملكة العربية السعودية — 12 فرعًا في الرياض وجدة والدمام والخبر. اعرف العنوان ورقم التواصل لكل فرع.',
     ...canonical('/فروعنا'),
-  },
-  contact: {
-    title: 'تواصل معنا',
-    description:
-      'تواصل مع فريق 3M مايل — الجوال 0561266685، البريد info@3mmile.sa، خدمة 24 ساعة طوال أيام الأسبوع.',
-    ...canonical('/تواصل-معنا'),
   },
   faq: {
     title: 'الأسئلة الشائعة',
@@ -81,6 +77,14 @@ export async function getTopRouteMetadata(slug: string): Promise<Metadata> {
       ...canonical('/معرض-الفيديو'),
     };
   }
+  if (route.page === 'contact') {
+    const settings = await getSiteSettings();
+    return {
+      title: 'تواصل معنا',
+      description: `تواصل مع فريق 3M مايل — الجوال ${settings.contactPhone}، البريد ${settings.contactEmail}، خدمة 24 ساعة طوال أيام الأسبوع.`,
+      ...canonical('/تواصل-معنا'),
+    };
+  }
   return STATIC[route.page] ?? {};
 }
 
@@ -90,12 +94,24 @@ export async function getSubRouteMetadata(slug: string, sub: string): Promise<Me
   if (!route) return {};
 
   if (route.page === 'offers') {
-    const page = await getOffersPage();
+    const [page, settings] = await Promise.all([getOffersPage(), getSiteSettings()]);
+    const title = 'عروض حماية السيارات';
+    // A route-level `openGraph` replaces the root layout's, so siteName/locale/type are re-supplied.
+    const description =
+      page.intro ||
+      'عروض وباقات حماية السيارات من 3M مايل — أفلام حماية PPF، تظليل عازل حراري وتلميع نانو سيراميك بأسعار خاصة.';
     return {
-      title: 'عروض حماية السيارات',
-      description: page.intro,
+      title,
+      description,
       ...canonical('/Packages/عروض-حماية-السيارات'),
-      openGraph: { images: [page.banner] },
+      openGraph: {
+        type: 'website',
+        locale: site.locale,
+        siteName: settings.siteNameFull,
+        title,
+        description,
+        ...(page.banner ? { images: [page.banner] } : {}),
+      },
     };
   }
 

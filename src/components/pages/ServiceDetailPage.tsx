@@ -10,9 +10,11 @@ import { ServiceDetail } from '@/components/services/ServiceDetail';
 export function ServiceDetailPage({
   service,
   content,
+  whatsappNumber,
 }: {
   service: Service;
   content: ServiceContent;
+  whatsappNumber: string;
 }) {
   return (
     <main id="main">
@@ -20,7 +22,7 @@ export function ServiceDetailPage({
         title={service.heading}
         crumbs={[{ label: 'خدماتنا', href: '/خدمات' }, { label: service.title }]}
       />
-      <ServiceDetail service={service} content={content} />
+      <ServiceDetail service={service} content={content} whatsappNumber={whatsappNumber} />
     </main>
   );
 }

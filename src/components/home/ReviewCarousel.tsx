@@ -2,7 +2,7 @@
 
 import { CmsImage } from '@/components/ui/CmsImage';
 import type { HomeContent } from '@/data/home';
-import { site } from '@/data/site';
+import type { SiteSettings } from '@/data/settings';
 import { useCarousel } from '@/hooks/useCarousel';
 import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
@@ -13,9 +13,18 @@ import { cn } from '@/lib/cn';
  * These are screenshots of the Google review UI, so there is no review text to mark up —
  * the alt text can only describe what each image is. An accepted trade-off.
  */
-export function ReviewCarousel({ reviews }: { reviews: HomeContent['reviews'] }) {
+export function ReviewCarousel({
+  reviews,
+  rating,
+}: {
+  reviews: HomeContent['reviews'];
+  rating: SiteSettings['rating'];
+}) {
   const perView = 2;
   const c = useCarousel({ count: reviews.images.length, perView, autoplay: 3500 });
+
+  // After the hooks: no reviews, no section.
+  if (!reviews.images.length) return null;
 
   return (
     <section className="border-t border-line-soft bg-ink px-5 py-5 text-center">
@@ -23,12 +32,12 @@ export function ReviewCarousel({ reviews }: { reviews: HomeContent['reviews'] })
         <h2 className="mb-2.5 text-4xl leading-tight font-black">{reviews.heading}</h2>
 
         <p className="mb-[5px] inline-flex items-center gap-2.5 rounded-[var(--radius-pill)] border border-line bg-white/5 px-5 py-2">
-          <span className="text-[1.3rem] font-black">{site.stats.rating}</span>
+          <span className="text-[1.3rem] font-black">{rating.score}</span>
           <span className="tracking-[2px] text-star" aria-hidden="true">
             ★★★★★
           </span>
           <span className="border-e border-[#444] pe-2.5 me-2.5 text-[0.85rem] text-fg-muted">
-            أكثر من {site.stats.reviewCount} تقييم
+            أكثر من {rating.reviewCount} تقييم
           </span>
         </p>
 
@@ -49,17 +58,19 @@ export function ReviewCarousel({ reviews }: { reviews: HomeContent['reviews'] })
             {reviews.images.map((img, i) => (
               <div
                 key={img.src}
-                className="flex h-[380px] w-full shrink-0 items-center justify-center p-4 select-none md:h-[500px] md:w-1/2 md:p-6"
+                className="flex h-[380px] w-full shrink-0 items-center justify-center p-4 select-none md:h-[420px] md:w-1/2 md:p-6"
                 aria-hidden={i < c.index || i >= c.index + perView}
               >
-                <CmsImage
-                  src={img.src}
-                  alt={img.alt}
-                  width={340}
-                  height={347}
-                  loading="lazy"
-                  className="max-h-full w-auto max-w-[340px] rounded-[var(--radius-lg)] object-contain"
-                />
+                <figure className="rounded-[var(--radius-lg)] bg-white p-3">
+                  <CmsImage
+                    src={img.src}
+                    alt={img.alt}
+                    width={958}
+                    height={694}
+                    loading="lazy"
+                    className="h-auto w-full max-w-[479px] object-contain"
+                  />
+                </figure>
               </div>
             ))}
           </div>

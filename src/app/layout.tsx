@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Cairo } from 'next/font/google';
 import { site } from '@/data/site';
 import { getPromo } from '@/data/promo';
-import { getSiteLogo, getSocialLinks } from '@/data/settings';
+import { getSiteLogo, getSocialLinks, getSiteSettings } from '@/data/settings';
+import { getServices } from '@/data/services';
 import { SiteChrome } from '@/components/layout/SiteChrome';
 import './globals.css';
 
@@ -19,23 +20,32 @@ const cairo = Cairo({
   variable: '--font-cairo',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: `3M مايل Mile | مركز متخصص في حماية السيارات`,
-    template: `%s | 3M مايل`,
-  },
-  description: site.description,
-  alternates: { canonical: '/' },
-  openGraph: {
-    type: 'website',
-    locale: site.locale,
-    siteName: site.nameFull,
-    title: `3M مايل Mile | مركز متخصص في حماية السيارات`,
-    description: site.description,
-  },
-  robots: { index: true, follow: true },
-};
+/**
+ * Site name and description come from the CMS (with `site.ts` fallbacks), so this is
+ * `generateMetadata` rather than a static export. `openGraph.siteName` uses the full
+ * brand string (`siteNameFull`), not the short `siteName`.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+
+  return {
+    metadataBase: new URL(site.url),
+    title: {
+      default: `3M مايل Mile | مركز متخصص في حماية السيارات`,
+      template: `%s | ${settings.siteName}`,
+    },
+    description: settings.description,
+    alternates: { canonical: '/' },
+    openGraph: {
+      type: 'website',
+      locale: site.locale,
+      siteName: settings.siteNameFull,
+      title: `3M مايل Mile | مركز متخصص في حماية السيارات`,
+      description: settings.description,
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: '#000000',
@@ -44,13 +54,33 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [promo, logo, social] = await Promise.all([getPromo(), getSiteLogo(), getSocialLinks()]);
+  const [promo, logo, social, settings, services] = await Promise.all([
+    getPromo(),
+    getSiteLogo(),
+    getSocialLinks(),
+    getSiteSettings(),
+    getServices(),
+  ]);
+  // first 3 by `order` (getServices() is already sorted server-side); never
+  // padded if fewer exist.
+  const footerServices = services.slice(0, 3).map((s) => ({ slug: s.slug, title: s.title }));
 
   return (
     <html lang={site.lang} dir={site.dir} className={cairo.variable}>
       <body>
         {/* Header/footer/floating actions/promo — suppressed under /admin. */}
-        <SiteChrome promo={promo} logo={logo} social={social}>{children}</SiteChrome>
+        <SiteChrome
+          promo={promo}
+          logo={logo}
+          social={social}
+          phone={settings.contactPhone}
+          whatsappNumber={settings.whatsappNumber}
+          footerDescription={settings.footerDescription}
+          footerEmail={settings.contactEmail}
+          footerServices={footerServices}
+        >
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );

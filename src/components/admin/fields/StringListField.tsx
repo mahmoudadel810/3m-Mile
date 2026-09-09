@@ -21,6 +21,7 @@ export function StringListField({
   value,
   onChange,
   maxItems,
+  itemMaxLength,
   addLabel = 'إضافة عنصر',
   placeholder,
 }: {
@@ -29,6 +30,8 @@ export function StringListField({
   value: string;
   onChange: (next: string) => void;
   maxItems?: number;
+  /** Length cap on each entry, mirroring the server's per-item `.max()`. */
+  itemMaxLength?: number;
   addLabel?: string;
   placeholder?: string;
 }) {
@@ -68,6 +71,7 @@ export function StringListField({
               type="text"
               value={item}
               placeholder={placeholder}
+              maxLength={itemMaxLength}
               onChange={(e) => setAt(index, e.target.value)}
               className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-line bg-ink px-3 py-1.5 text-fg outline-none focus:border-primary"
             />

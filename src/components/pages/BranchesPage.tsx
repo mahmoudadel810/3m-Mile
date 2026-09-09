@@ -1,12 +1,14 @@
-import { getBranches, getBranchesByCity } from '@/data/branches';
+import { getBranches } from '@/data/branches';
+import { getPageCopy } from '@/data/settings';
 import { site } from '@/data/site';
 import { PageHero } from '@/components/layout/PageHero';
 import { BranchPinMap } from '@/components/branches/BranchPinMap';
 import { Reveal } from '@/components/ui/Reveal';
 import { Icon } from '@/components/ui/Icon';
+import { jsonLdHtml, safeHref } from '@/lib/safe';
 
 /**
- * Branches: an interactive pin map above a city-grouped list.
+ * Branches: an interactive pin map above a flat, centred row of branch cards.
  *
  * Both the pins and the cards read from the same `branches` array. On the source these
  * are two hand-written copies of the same data, which is how one pin ended up with a
@@ -16,7 +18,7 @@ import { Icon } from '@/components/ui/Icon';
  * the twelve locations can surface in local search results.
  */
 export async function BranchesPage() {
-  const [branches, branchesByCity] = await Promise.all([getBranches(), getBranchesByCity()]);
+  const [branches, pageCopy] = await Promise.all([getBranches(), getPageCopy()]);
 
   const jsonLd = branches.map((b) => ({
     '@context': 'https://schema.org',
@@ -33,7 +35,7 @@ export async function BranchesPage() {
     <main id="main">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <PageHero title="فروعنا" crumbs={[{ label: 'فروعنا' }]} />
@@ -42,9 +44,9 @@ export async function BranchesPage() {
         <div className="mx-auto w-[95%] max-w-[var(--container-narrow)]">
           <Reveal>
             <h2 className="mb-6 text-center text-xl leading-relaxed font-black md:text-2xl">
-              مراكز 3M MILE المعتمدة
+              {pageCopy.branchesHeading || 'مراكز 3M MILE المعتمدة'}
               <span className="mt-1 block text-base font-bold text-fg-muted">
-                في المملكة العربية السعودية
+                {pageCopy.branchesSub || 'في المملكة العربية السعودية'}
               </span>
             </h2>
           </Reveal>
@@ -54,49 +56,36 @@ export async function BranchesPage() {
       </section>
 
       <section className="bg-ink pb-12">
-        <div className="mx-auto w-[95%] max-w-[var(--container-narrow)]">
-          {branchesByCity.map((group) => (
-            <div key={group.city} className="mb-8 last:mb-0">
-              <h2 className="mb-4 flex items-center gap-2 text-xl font-black">
-                <Icon name="pin" size={20} className="text-primary" />
-                {group.city}
-                <span className="text-sm font-bold text-fg-dim">({group.items.length})</span>
-              </h2>
-
-              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {group.items.map((b, i) => (
-                  <Reveal
-                    as="li"
-                    key={b.id}
-                    delay={(i % 3) * 60}
-                    className="rounded-[var(--radius-xl)] border border-line bg-glass p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary"
-                  >
-                    <h3 className="text-lg font-black">
-                      <a
-                        href={b.mapUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="transition-colors hover:text-primary"
-                      >
-                        {b.name}
-                      </a>
-                    </h3>
-                    <p className="mt-1.5 text-base text-fg-muted">{b.address}</p>
-                    <p className="mt-3">
-                      <a
-                        href={`tel:${b.phone}`}
-                        className="inline-flex items-center gap-2 font-bold text-primary"
-                      >
-                        <Icon name="phone" size={15} />
-                        <span dir="ltr">{b.phone}</span>
-                      </a>
-                    </p>
-                  </Reveal>
-                ))}
-              </ul>
-            </div>
+        {/* Flat wrapping row of equal-width cards, as on the source. */}
+        <ul className="mx-auto flex w-[95%] max-w-[var(--container)] flex-wrap justify-center gap-6 text-center sm:gap-[50px]">
+          {branches.map((b, i) => (
+            <Reveal
+              as="li"
+              key={b.id}
+              delay={(i % 4) * 60}
+              className="w-full max-w-[300px] rounded-[12px] border border-line bg-glass p-5 shadow-[0_4px_12px_rgb(0_0_0/0.2)] transition-all duration-300 hover:-translate-y-[5px] hover:shadow-[0_6px_18px_rgb(0_0_0/0.3)]"
+            >
+              <h3 className="mb-2 flex items-center justify-center gap-2 text-lg font-bold">
+                <Icon name="pin" size={18} className="shrink-0 text-primary" />
+                <a
+                  href={safeHref(b.mapUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary transition-colors hover:text-white"
+                >
+                  {b.name}
+                </a>
+              </h3>
+              <p className="my-2 text-[15px] leading-relaxed">{b.address}</p>
+              <p className="flex items-center justify-center gap-1.5 text-[15px] font-bold">
+                <Icon name="phone" size={15} className="shrink-0 text-primary" />
+                <a href={`tel:${b.phone}`} dir="ltr" className="transition-colors hover:text-primary">
+                  {b.phone}
+                </a>
+              </p>
+            </Reveal>
           ))}
-        </div>
+        </ul>
       </section>
     </main>
   );

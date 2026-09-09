@@ -17,8 +17,17 @@ import { Icon } from '@/components/ui/Icon';
  * Its arrows are also semantically swapped on the source ("next" scrolls `left: -320`);
  * these scroll by the inline axis, which is correct in both directions.
  */
-export function LatestPosts({ posts }: { posts: PostSummary[] }) {
+export function LatestPosts({
+  posts,
+  heading,
+}: {
+  posts: PostSummary[];
+  heading?: string;
+}) {
   const trackRef = useRef<HTMLUListElement>(null);
+
+  // After the hooks: no posts, no section.
+  if (!posts.length) return null;
 
   const scrollBy = (direction: 1 | -1) => {
     const el = trackRef.current;
@@ -32,7 +41,7 @@ export function LatestPosts({ posts }: { posts: PostSummary[] }) {
     <section className="border-t border-line-soft bg-ink py-5">
       <div className="mx-auto w-[95%] max-w-[var(--container)]">
         <div className="mb-5 flex items-center justify-between gap-4">
-          <h2 className="text-3xl font-extrabold">أحدث المقالات</h2>
+          <h2 className="text-3xl font-extrabold">{heading || 'أحدث المقالات'}</h2>
           <div className="flex gap-2">
             <RailButton side="prev" onClick={() => scrollBy(-1)} />
             <RailButton side="next" onClick={() => scrollBy(1)} />

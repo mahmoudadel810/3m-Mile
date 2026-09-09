@@ -7,6 +7,7 @@ import { ProductGallery } from '@/components/shop/ProductGallery';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { Reveal } from '@/components/ui/Reveal';
 import { Icon, BrandIcon } from '@/components/ui/Icon';
+import { jsonLdHtml } from '@/lib/safe';
 
 /**
  * A single catalogue entry.
@@ -24,14 +25,16 @@ export function ProductPage({
   product,
   related,
   categories,
+  whatsappNumber,
 }: {
   product: Product;
   related: ProductSummary[];
   categories: ProductCategory[];
+  whatsappNumber: string;
 }) {
   const category = categories.find((c) => c.slug === product.categories[0]);
 
-  const enquiry = waLink(`مرحباً، أرغب بالاستفسار عن ${product.title}`);
+  const enquiry = waLink(`مرحباً، أرغب بالاستفسار عن ${product.title}`, whatsappNumber);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -49,7 +52,7 @@ export function ProductPage({
     <main id="main">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <PageHero

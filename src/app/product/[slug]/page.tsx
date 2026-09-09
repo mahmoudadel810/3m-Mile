@@ -8,6 +8,7 @@ import {
 } from '@/lib/products';
 import { decodeSlug } from '@/data/routes';
 import { site } from '@/data/site';
+import { getSiteSettings } from '@/data/settings';
 import { ProductPage } from '@/components/pages/ProductPage';
 
 /**
@@ -53,9 +54,17 @@ export default async function ProductRoute({ params }: { params: Promise<{ slug:
   const product = await getProduct(decodeSlug(slug));
   if (!product) notFound();
 
-  const [related, categories] = await Promise.all([
+  const [related, categories, settings] = await Promise.all([
     getRelatedProducts(product, 3),
     getProductCategories(),
+    getSiteSettings(),
   ]);
-  return <ProductPage product={product} related={related} categories={categories} />;
+  return (
+    <ProductPage
+      product={product}
+      related={related}
+      categories={categories}
+      whatsappNumber={settings.whatsappNumber}
+    />
+  );
 }

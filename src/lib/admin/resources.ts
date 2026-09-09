@@ -11,6 +11,9 @@
  * `npm run check:contract` in the server repo verifies both sides still agree.
  */
 
+import { MEDIA_SPECS, cssAspect, specHelp, type SlotKey } from './mediaSpec.ts';
+import { KSA_CITY_NAMES } from '../ksaCities.ts';
+
 // ---------------------------------------------------------------------------
 // Field model
 // ---------------------------------------------------------------------------
@@ -72,6 +75,7 @@ export type AdminField = {
   label: string;
   type: FieldType;
   required?: boolean;
+  from?: string;
   help?: string;
   placeholder?: string;
   /** Client-side length guard, mirroring the server's `.max()`. */
@@ -80,6 +84,8 @@ export type AdminField = {
   max?: number;
   /** Extra client-side check. Return an Arabic message, or null when the value is fine. */
   pattern?: { test: RegExp; message: string };
+  /** `<datalist>` suggestions on a `text` field. Unlike `options`, they do not constrain the value. */
+  suggestions?: readonly string[];
   options?: Option[];
   relation?: { endpoint: string; multiple?: boolean; query?: string; labelKey?: string };
   links?: LinkSource;
@@ -87,10 +93,16 @@ export type AdminField = {
   item?: RepeaterField[];
   /** Hard cap on rows, mirroring the server's `.max()` on the array. */
   maxItems?: number;
+  /** Hard floor on rows, mirroring the server's `.min()` on the array. */
+  minItems?: number;
+  /** `stringList` only: length cap on each entry, mirroring the server's per-item `.max()`. */
+  itemMaxLength?: number;
   /** Gives each row an upload in an indexed slot: row 0 → `trustImage0`. */
-  rowImage?: { slotPrefix: string; label: string; valuePath: string; aspect?: string };
+  rowImage?: { slotPrefix: string; label: string; valuePath: string; aspect?: string; spec?: SlotKey };
   /** Ratio of the container on the public site, as CSS `aspect-ratio`. Preview only. */
   aspect?: string;
+  /** The slot this image/video occupies; `mediaSpec.ts` owns its geometry. */
+  spec?: SlotKey;
   /** Number of files an `images` slot accepts. */
   count?: number;
   /** Accepted media. `media` also allows video; mirrors the per-field rule in slotUpload.js. */
@@ -229,16 +241,30 @@ export const RESOURCES: ResourceConfig[] = [
         help: 'التصنيفات تُدار من صفحة «التصنيفات».',
       },
       // Four named slots, one per fixed container in the service layout.
-      { name: 'heroImage', label: 'الصورة الرئيسية (مربعة)', type: 'image', aspect: '1/1', maxSizeMB: 10 },
-      // Alt text per slot; falls back to the service title when blank.
-      { name: 'heroImageAlt', label: 'وصف الصورة الرئيسية', type: 'text', maxLength: 300, help: 'اتركه فارغاً لاستخدام اسم الخدمة.' },
-      { name: 'wideImage', label: 'صورة عريضة (فهرس الخدمات)', type: 'image', aspect: '16/10', maxSizeMB: 10 },
-      { name: 'wideImageAlt', label: 'وصف الصورة العريضة', type: 'text', maxLength: 300, help: 'اتركه فارغاً لاستخدام اسم الخدمة.' },
-      { name: 'gridImage', label: 'صورة السلايدر (طولية)', type: 'image', aspect: '3/4', maxSizeMB: 10 },
-      { name: 'gridImageAlt', label: 'وصف صورة السلايدر', type: 'text', maxLength: 300, help: 'اتركه فارغاً لاستخدام اسم الخدمة.' },
       {
-        name: 'collage', label: 'صور المزايا', type: 'images', count: 3, aspect: '1/1', maxSizeMB: 10,
-        help: 'ثلاث صور تظهر بجانب قسم المزايا.',
+        name: 'heroImage', label: 'الصورة الرئيسية (مربعة)', type: 'image', maxSizeMB: 10,
+        spec: 'services.heroImage', aspect: cssAspect(MEDIA_SPECS['services.heroImage']),
+        help: specHelp(MEDIA_SPECS['services.heroImage']),
+      },
+      // Alt text per slot; falls back to the service title when blank.
+      { name: 'heroImageAlt', from: 'heroImage.alt', label: 'وصف الصورة الرئيسية', type: 'text', maxLength: 300, help: 'اتركه فارغاً لاستخدام اسم الخدمة.' },
+      {
+        name: 'wideImage', label: 'صورة عريضة (فهرس الخدمات)', type: 'image', maxSizeMB: 10,
+        spec: 'services.wideImage', aspect: cssAspect(MEDIA_SPECS['services.wideImage']),
+        help: specHelp(MEDIA_SPECS['services.wideImage']),
+      },
+      { name: 'wideImageAlt', from: 'wideImage.alt', label: 'وصف الصورة العريضة', type: 'text', maxLength: 300, help: 'اتركه فارغاً لاستخدام اسم الخدمة.' },
+      // Same 10:11 geometry as the home tiles, so it reuses 'home.tile'.
+      {
+        name: 'gridImage', label: 'صورة السلايدر (طولية)', type: 'image', maxSizeMB: 10,
+        spec: 'home.tile', aspect: cssAspect(MEDIA_SPECS['home.tile']),
+        help: specHelp(MEDIA_SPECS['home.tile']),
+      },
+      { name: 'gridImageAlt', from: 'gridImage.alt', label: 'وصف صورة السلايدر', type: 'text', maxLength: 300, help: 'اتركه فارغاً لاستخدام اسم الخدمة.' },
+      {
+        name: 'collage', label: 'صور المزايا', type: 'images', count: 3, maxSizeMB: 10,
+        spec: 'services.collage', aspect: cssAspect(MEDIA_SPECS['services.collage']),
+        help: `ثلاث صور تظهر بجانب قسم المزايا. ${specHelp(MEDIA_SPECS['services.collage'])}`,
         replaceWarning: 'رفع صور جديدة يستبدل الصور الثلاث الحالية بالكامل.',
       },
       { name: 'introHeading', label: 'عنوان المقدمة', type: 'text', maxLength: 300 },
@@ -328,8 +354,12 @@ export const RESOURCES: ResourceConfig[] = [
         name: 'tags', label: 'الوسوم', type: 'tags',
         help: 'اكتب الوسم ثم اضغط Enter. الوسوم كلمات مفتاحية قصيرة تصف المقال.',
       },
-      { name: 'coverImage', label: 'صورة الغلاف', type: 'image', aspect: '16/10', maxSizeMB: 10 },
-      { name: 'coverImageAlt', label: 'وصف صورة الغلاف', type: 'text', maxLength: 300, help: 'يُقرأ لضعاف البصر ويظهر إن تعذّر تحميل الصورة.' },
+      {
+        name: 'coverImage', label: 'صورة الغلاف', type: 'image', maxSizeMB: 10,
+        spec: 'blog.cover', aspect: cssAspect(MEDIA_SPECS['blog.cover']),
+        help: specHelp(MEDIA_SPECS['blog.cover']),
+      },
+      { name: 'coverImageAlt', from: 'coverImage.alt', label: 'وصف صورة الغلاف', type: 'text', maxLength: 300, help: 'يُقرأ لضعاف البصر ويظهر إن تعذّر تحميل الصورة.' },
       { name: 'isPublished', label: 'منشور', type: 'boolean', help: 'أوقفه لحفظ المقال كمسودة لا تظهر على الموقع.' },
     ],
   },
@@ -359,8 +389,9 @@ export const RESOURCES: ResourceConfig[] = [
       },
       // Capped at 8 to match `uploaders.productImages.array('images', 8)` on the route.
       {
-        name: 'images', label: 'صور المنتج', type: 'images', count: 8, aspect: '1/1', maxSizeMB: 5,
-        help: 'أول صورة هي صورة البطاقة في قائمة المتجر.',
+        name: 'images', label: 'صور المنتج', type: 'images', count: 8, maxSizeMB: 5,
+        spec: 'products.image', aspect: cssAspect(MEDIA_SPECS['products.image']),
+        help: `أول صورة هي صورة البطاقة في قائمة المتجر. ${specHelp(MEDIA_SPECS['products.image'])}`,
         replaceWarning: 'رفع صور جديدة يستبدل جميع صور المنتج الحالية.',
       },
       { name: 'isFeatured', label: 'مميز', type: 'boolean' },
@@ -392,10 +423,12 @@ export const RESOURCES: ResourceConfig[] = [
           { value: 'video', label: 'فيديو يوتيوب (معرض الفيديو)' },
         ],
       },
-      // `file` is the multer field name on the gallery route.
+      // `file` is the multer field name. One widget serves images and videos; the
+      // preview uses the image geometry and ImageField switches to 'gallery.video' by MIME.
       {
-        name: 'file', label: 'الصورة', type: 'image', aspect: '1/1', maxSizeMB: 50,
-        help: 'مطلوبة لعناصر الصور فقط. عناصر الفيديو تستخدم معرّف يوتيوب بدلاً منها.',
+        name: 'file', label: 'الصورة أو الفيديو', type: 'image', accept: 'media', maxSizeMB: 50,
+        spec: 'gallery.image', aspect: cssAspect(MEDIA_SPECS['gallery.image']),
+        help: `صورة (مربّعة) لمعرض الصور، أو فيديو MP4 عمودي (9:16) لمعرض الفيديو. الحد الأقصى 50 ميغابايت. يمكن بدلاً من الفيديو إدخال معرّف يوتيوب أدناه. ${specHelp(MEDIA_SPECS['gallery.image'])}`,
       },
       {
         name: 'externalId', label: 'معرّف فيديو يوتيوب', type: 'text', maxLength: 11,
@@ -438,7 +471,13 @@ export const RESOURCES: ResourceConfig[] = [
     emptyHint: 'لا توجد فروع بعد. أضف فرعاً ليظهر في الخريطة وفي القائمة أسفلها.',
     fields: [
       { name: 'name', label: 'اسم الفرع', type: 'text', required: true, maxLength: 200 },
-      { name: 'city', label: 'المدينة', type: 'text', maxLength: 120, help: 'الفروع تُجمَّع حسب المدينة في صفحة الفروع.' },
+      {
+        // The city drives the map pin (`lib/ksaCities.ts`); an unlisted city gets no pin.
+        name: 'city', label: 'المدينة', type: 'text', maxLength: 120,
+        suggestions: KSA_CITY_NAMES,
+        placeholder: 'اختر مدينة أو اكتب اسماً جديداً',
+        help: 'اختر من القائمة ليظهر دبوس الفرع على الخريطة. يمكنك كتابة مدينة غير مدرجة — سيظهر الفرع في القائمة بدون دبوس.',
+      },
       { name: 'address', label: 'العنوان', type: 'text', maxLength: 500 },
       { name: 'phone', label: 'الهاتف', type: 'text', maxLength: 40, placeholder: '0555555555' },
       { name: 'whatsapp', label: 'واتساب', type: 'text', maxLength: 40, placeholder: '966555555555' },
@@ -449,15 +488,6 @@ export const RESOURCES: ResourceConfig[] = [
         help: 'الرابط الذي يفتحه زر «الخريطة» في بطاقة الفرع.',
       },
       { name: 'workingHours', label: 'ساعات العمل', type: 'text', maxLength: 200, placeholder: 'السبت – الخميس، 9 ص – 11 م' },
-      // Pin position on the map image. Both halves are required for a pin to render.
-      {
-        name: 'pin.top', label: 'موضع الدبوس على الخريطة — من الأعلى', type: 'percent',
-        help: 'نسبة من ارتفاع صورة الخريطة. اتركه فارغاً إن لم ترغب بإظهار دبوس لهذا الفرع.',
-      },
-      {
-        name: 'pin.start', label: 'موضع الدبوس على الخريطة — من الجهة اليمنى', type: 'percent',
-        help: 'نسبة من عرض صورة الخريطة. يجب تعبئة الحقلين معاً ليظهر الدبوس.',
-      },
       ORDER_FIELD,
       ACTIVE_FIELD,
     ],
@@ -495,8 +525,8 @@ export const RESOURCES: ResourceConfig[] = [
       {
         // Server-side: `logo_is_required`.
         name: 'logo', label: 'الشعار', type: 'image', required: true,
-        aspect: '3/2', maxSizeMB: 1,
-        help: 'يُفضّل شعار بخلفية شفافة (PNG أو WEBP). الحد الأقصى 1 ميغابايت.',
+        spec: 'partners.logo', aspect: cssAspect(MEDIA_SPECS['partners.logo']), maxSizeMB: 1,
+        help: `يُفضّل شعار بخلفية شفافة (PNG أو WEBP). ${specHelp(MEDIA_SPECS['partners.logo'])}`,
       },
       ORDER_FIELD,
       ACTIVE_FIELD,
@@ -516,7 +546,8 @@ export const RESOURCES: ResourceConfig[] = [
       {
         // Server-side: `image_is_required`.
         name: 'image', label: 'صورة التقييم', type: 'image', required: true,
-        aspect: '4/3', maxSizeMB: 10,
+        spec: 'reviews.image', aspect: cssAspect(MEDIA_SPECS['reviews.image']), maxSizeMB: 10,
+        help: specHelp(MEDIA_SPECS['reviews.image']),
       },
       {
         name: 'alt', label: 'الوصف (مطلوب للوصولية)', type: 'text', required: true, maxLength: 300,
@@ -541,7 +572,11 @@ export const RESOURCES: ResourceConfig[] = [
       { name: 'title', label: 'عنوان العرض', type: 'text', required: true, maxLength: 200 },
       SLUG_FIELD,
       { name: 'description', label: 'نص استفسار واتساب', type: 'textarea', help: 'الرسالة الجاهزة التي تُفتح في واتساب عند الضغط على البطاقة.' },
-      { name: 'image', label: 'صورة العرض', type: 'image', aspect: '4/5', maxSizeMB: 10 },
+      {
+        name: 'image', label: 'صورة العرض', type: 'image', maxSizeMB: 10,
+        spec: 'packages.image', aspect: cssAspect(MEDIA_SPECS['packages.image']),
+        help: specHelp(MEDIA_SPECS['packages.image']),
+      },
       {
         name: 'service', label: 'الخدمة المرتبطة', type: 'relation',
         relation: { endpoint: '/services', labelKey: 'title' },
@@ -589,9 +624,17 @@ export const RESOURCES: ResourceConfig[] = [
     endpoint: '/home',
     kind: 'singleton',
     fields: [
-      { name: 'heroVideo', label: 'فيديو الغلاف', type: 'image', accept: 'media', aspect: '21/9', maxSizeMB: 50, help: 'MP4 أو WebM. الحد الأقصى 50 ميغابايت.' },
-      { name: 'heroPoster', label: 'صورة الغلاف (قبل تشغيل الفيديو)', type: 'image', aspect: '21/9', maxSizeMB: 10 },
-      { name: 'hero.ctaLabel', label: 'نص زر الغلاف', type: 'text', maxLength: 120 },
+      {
+        name: 'heroVideo', label: 'فيديو الغلاف', type: 'image', accept: 'media', maxSizeMB: 50,
+        spec: 'home.heroVideo', aspect: cssAspect(MEDIA_SPECS['home.heroVideo']),
+        help: `MP4 أو WebM. ${specHelp(MEDIA_SPECS['home.heroVideo'])}`,
+      },
+      {
+        name: 'heroPoster', label: 'صورة الغلاف (قبل تشغيل الفيديو)', type: 'image', maxSizeMB: 10,
+        spec: 'home.heroPoster', aspect: cssAspect(MEDIA_SPECS['home.heroPoster']),
+        help: specHelp(MEDIA_SPECS['home.heroPoster']),
+      },
+      { name: 'hero.ctaLabel', label: 'نص زر الغلاف', type: 'text', maxLength: 20 },
       { name: 'hero.ctaText', label: 'نص واتساب لزر الغلاف', type: 'text', maxLength: 300 },
 
       { name: 'heroTiles.servicesLabel', label: 'عنوان بطاقة الخدمات', type: 'text', maxLength: 120 },
@@ -599,12 +642,20 @@ export const RESOURCES: ResourceConfig[] = [
       { name: 'heroTiles.branches.label', label: 'عنوان بطاقة الفروع', type: 'text', maxLength: 120 },
       // No `heroTiles.branches.href`: the path is fixed in routes.ts and defaulted in
       // data/home.ts. Branch content is edited on the branches screen.
-      { name: 'branchesTileImage', label: 'صورة بطاقة الفروع', type: 'image', aspect: '3/4', maxSizeMB: 10 },
+      {
+        name: 'branchesTileImage', label: 'صورة بطاقة الفروع', type: 'image', maxSizeMB: 10,
+        spec: 'home.tile', aspect: cssAspect(MEDIA_SPECS['home.tile']),
+        help: specHelp(MEDIA_SPECS['home.tile']),
+      },
       // HeroGrid and WhyUs render these alt attributes with no fallback.
       { name: 'heroTiles.branches.image.alt', label: 'وصف صورة بطاقة الفروع', type: 'text', maxLength: 300 },
 
       { name: 'heroTiles.gallery.label', label: 'عنوان بطاقة الأعمال', type: 'text', maxLength: 120 },
-      { name: 'galleryTileImage', label: 'صورة بطاقة الأعمال', type: 'image', aspect: '3/4', maxSizeMB: 10 },
+      {
+        name: 'galleryTileImage', label: 'صورة بطاقة الأعمال', type: 'image', maxSizeMB: 10,
+        spec: 'home.tile', aspect: cssAspect(MEDIA_SPECS['home.tile']),
+        help: specHelp(MEDIA_SPECS['home.tile']),
+      },
       { name: 'heroTiles.gallery.image.alt', label: 'وصف صورة بطاقة الأعمال', type: 'text', maxLength: 300 },
       {
         name: 'heroTiles.gallery.actions', label: 'أزرار بطاقة الأعمال', type: 'repeater', maxItems: 4,
@@ -617,43 +668,59 @@ export const RESOURCES: ResourceConfig[] = [
       },
 
       {
-        name: 'trust', label: 'شارات الثقة', type: 'repeater', maxItems: 3,
-        help: 'ثلاث شارات كحد أقصى. صورة كل شارة تُرفع من داخل صفّها.',
+        name: 'trust', label: 'شارات الثقة', type: 'repeater', minItems: 3, maxItems: 3,
+        help: 'ثلاث شارات بالضبط — لا أكثر ولا أقل. صورة كل شارة تُرفع من داخل صفّها.',
         item: [
-          { name: 'head', label: 'العنوان', type: 'text', maxLength: 120, required: true },
-          { name: 'sub', label: 'السطر الثاني', type: 'text', maxLength: 120 },
+          { name: 'head', label: 'العنوان', type: 'text', maxLength: 20, required: true },
+          { name: 'sub', label: 'السطر الثاني', type: 'text', maxLength: 40 },
           { name: 'icon', label: 'الأيقونة (تُستخدم إن لم توجد صورة)', type: 'icon' },
           { name: 'alt', label: 'وصف الصورة', type: 'text', maxLength: 300, span: 2, from: 'image.alt' },
         ],
         // Row N → the `trustImageN` slot in HOME_SLOTS.
-        rowImage: { slotPrefix: 'trustImage', label: 'صورة الشارة', valuePath: 'image.url', aspect: '1/1' },
+        rowImage: {
+          slotPrefix: 'trustImage', label: 'صورة الشارة', valuePath: 'image.url',
+          spec: 'home.trustIcon', aspect: cssAspect(MEDIA_SPECS['home.trustIcon']),
+        },
       },
 
-      { name: 'whyUs.heading', label: 'عنوان «لماذا تختارنا»', type: 'text', maxLength: 300 },
-      { name: 'whyUs.description', label: 'وصف «لماذا تختارنا»', type: 'textarea', maxLength: 2000 },
-      { name: 'whyUsImage', label: 'صورة «لماذا تختارنا»', type: 'image', aspect: '4/3', maxSizeMB: 10 },
+      { name: 'whyUs.heading', label: 'عنوان «لماذا تختارنا»', type: 'text', maxLength: 40 },
+      { name: 'whyUs.description', label: 'وصف «لماذا تختارنا»', type: 'textarea', maxLength: 300 },
+      {
+        name: 'whyUsImage', label: 'صورة «لماذا تختارنا»', type: 'image', maxSizeMB: 10,
+        spec: 'home.whyUsImage', aspect: cssAspect(MEDIA_SPECS['home.whyUsImage']),
+        help: specHelp(MEDIA_SPECS['home.whyUsImage']),
+      },
       { name: 'whyUs.image.alt', label: 'وصف صورة «لماذا تختارنا»', type: 'text', maxLength: 300 },
       {
-        name: 'whyUs.points', label: 'النقاط', type: 'stringList', maxItems: 20,
+        name: 'whyUs.points', label: 'النقاط', type: 'stringList', maxItems: 20, itemMaxLength: 70,
         help: 'كل نقطة تظهر بجانب علامة صح.',
       },
-      { name: 'whyUs.ctaLabel', label: 'نص الزر', type: 'text', maxLength: 120 },
+      { name: 'whyUs.ctaLabel', label: 'نص الزر', type: 'text', maxLength: 20 },
 
       {
-        name: 'stats', label: 'الأرقام', type: 'repeater', maxItems: 6,
-        help: 'الأرقام التي تظهر في شريط الإحصائيات.',
+        name: 'stats', label: 'الأرقام', type: 'repeater', minItems: 3, maxItems: 3,
+        help: 'ثلاثة أرقام بالضبط تظهر في شريط الإحصائيات.',
         item: [
           { name: 'value', label: 'الرقم', type: 'number', required: true },
-          { name: 'suffix', label: 'لاحقة', type: 'text', maxLength: 10, placeholder: '+' },
-          { name: 'title', label: 'الوصف', type: 'text', maxLength: 120, required: true, span: 2, placeholder: 'سنة خبرة' },
+          { name: 'suffix', label: 'لاحقة', type: 'text', maxLength: 6, placeholder: '+' },
+          { name: 'title', label: 'الوصف', type: 'text', maxLength: 16, required: true, span: 2, placeholder: 'سنة خبرة' },
         ],
       },
 
-      { name: 'reviewsIntro.heading', label: 'عنوان التقييمات', type: 'text', maxLength: 300 },
-      { name: 'reviewsIntro.description', label: 'وصف التقييمات', type: 'textarea', maxLength: 2000 },
-      { name: 'contactBlock.heading', label: 'عنوان نموذج التواصل', type: 'text', maxLength: 300 },
-      { name: 'contactBlock.subheading', label: 'وصف نموذج التواصل', type: 'text', maxLength: 500 },
-      { name: 'contactBlock.formTitle', label: 'عنوان زر النموذج', type: 'text', maxLength: 120 },
+      { name: 'reviewsIntro.heading', label: 'عنوان التقييمات', type: 'text', maxLength: 30 },
+      { name: 'reviewsIntro.description', label: 'وصف التقييمات', type: 'textarea', maxLength: 80 },
+      { name: 'contactBlock.heading', label: 'عنوان نموذج التواصل', type: 'text', maxLength: 30 },
+      { name: 'contactBlock.subheading', label: 'وصف نموذج التواصل', type: 'text', maxLength: 80 },
+      { name: 'contactBlock.formTitle', label: 'عنوان زر النموذج', type: 'text', maxLength: 20 },
+
+      // «عناوين الأقسام»: section headings and the shared «احجز الآن» label.
+      { name: 'sections.partnersHeading', label: 'عنوان شريط شركاء النجاح', type: 'text', maxLength: 30 },
+      { name: 'sections.partnersSub', label: 'وصف شريط شركاء النجاح', type: 'text', maxLength: 80 },
+      { name: 'sections.latestPostsHeading', label: 'عنوان أحدث المقالات', type: 'text', maxLength: 30 },
+      {
+        name: 'sections.ctaLabel', label: 'نص زر «احجز الآن»', type: 'text', maxLength: 20,
+        help: 'يُستخدم في عدة صفحات (الخدمات، من نحن، معرض الفيديو، العروض).',
+      },
     ],
   },
 
@@ -666,7 +733,11 @@ export const RESOURCES: ResourceConfig[] = [
     readEndpoint: '/promo/admin',
     kind: 'singleton',
     fields: [
-      { name: 'image', label: 'صورة العرض', type: 'image', aspect: '3/2', maxSizeMB: 10 },
+      {
+        name: 'image', label: 'صورة العرض', type: 'image', maxSizeMB: 10,
+        spec: 'promo.image', aspect: cssAspect(MEDIA_SPECS['promo.image']),
+        help: specHelp(MEDIA_SPECS['promo.image']),
+      },
       { name: 'alt', label: 'وصف الصورة', type: 'text', maxLength: 300 },
       { name: 'whatsappText', label: 'نص واتساب', type: 'text', maxLength: 300 },
       {
@@ -689,11 +760,15 @@ export const RESOURCES: ResourceConfig[] = [
     endpoint: '/offers-page',
     kind: 'singleton',
     fields: [
-      { name: 'banner', label: 'البانر', type: 'image', aspect: '21/9', maxSizeMB: 10 },
+      {
+        name: 'banner', label: 'البانر', type: 'image', maxSizeMB: 10,
+        spec: 'offers.banner', aspect: cssAspect(MEDIA_SPECS['offers.banner']),
+        help: specHelp(MEDIA_SPECS['offers.banner']),
+      },
       { name: 'bannerAlt', label: 'وصف البانر', type: 'text', maxLength: 300 },
       { name: 'intro', label: 'المقدمة', type: 'textarea', maxLength: 4000 },
-      { name: 'formHeading', label: 'عنوان النموذج', type: 'text', maxLength: 300 },
-      { name: 'formSubheading', label: 'وصف النموذج', type: 'text', maxLength: 500 },
+      { name: 'formHeading', label: 'عنوان النموذج', type: 'text', maxLength: 30 },
+      { name: 'formSubheading', label: 'وصف النموذج', type: 'text', maxLength: 80 },
     ],
   },
 
@@ -705,9 +780,13 @@ export const RESOURCES: ResourceConfig[] = [
     endpoint: '/blog-intro',
     kind: 'singleton',
     fields: [
-      { name: 'heading', label: 'العنوان', type: 'text', maxLength: 300 },
-      { name: 'description', label: 'الوصف', type: 'textarea', maxLength: 2000 },
-      { name: 'image', label: 'الصورة', type: 'image', aspect: '16/10', maxSizeMB: 10 },
+      { name: 'heading', label: 'العنوان', type: 'text', maxLength: 30 },
+      { name: 'description', label: 'الوصف', type: 'textarea', maxLength: 80 },
+      {
+        name: 'image', label: 'الصورة', type: 'image', maxSizeMB: 10,
+        spec: 'blogIntro.image', aspect: cssAspect(MEDIA_SPECS['blogIntro.image']),
+        help: specHelp(MEDIA_SPECS['blogIntro.image']),
+      },
       { name: 'imageAlt', label: 'وصف الصورة', type: 'text', maxLength: 300 },
     ],
   },
@@ -720,10 +799,10 @@ export const RESOURCES: ResourceConfig[] = [
     endpoint: '/gallery-intro',
     kind: 'singleton',
     fields: [
-      { name: 'video.heading', label: 'عنوان معرض الفيديو', type: 'text', maxLength: 300 },
-      { name: 'video.description', label: 'وصف معرض الفيديو', type: 'textarea', maxLength: 2000 },
-      { name: 'photo.heading', label: 'عنوان معرض الصور', type: 'text', maxLength: 300 },
-      { name: 'photo.description', label: 'وصف معرض الصور', type: 'textarea', maxLength: 2000 },
+      { name: 'video.heading', label: 'عنوان معرض الفيديو', type: 'text', maxLength: 30 },
+      { name: 'video.description', label: 'وصف معرض الفيديو', type: 'textarea', maxLength: 80 },
+      { name: 'photo.heading', label: 'عنوان معرض الصور', type: 'text', maxLength: 30 },
+      { name: 'photo.description', label: 'وصف معرض الصور', type: 'textarea', maxLength: 80 },
     ],
   },
 
@@ -734,52 +813,64 @@ export const RESOURCES: ResourceConfig[] = [
     description: 'الهوية وبيانات التواصل وروابط التواصل الاجتماعي.',
     endpoint: '/settings',
     kind: 'singleton',
-    notice:
-      'الشعار يُقرأ من هنا: ارفعه وسيظهر في رأس الموقع خلال دقيقة. بقية الحقول تُحفظ ' +
-      'بشكل صحيح لكن الموقع العام لا يقرأها بعد — لا يزال يستخدم قيم الهوية الثابتة في ' +
-      'الكود (رقم الهاتف والواتساب وروابط التواصل). ربطها يحتاج خطوة تطوير إضافية. ' +
-      'أما «من نحن» والأرقام وسياسة الضمان فتُدار حالياً من صفحة «الصفحة الرئيسية» ' +
-      'و«سياسة الضمان».',
     fields: [
       { name: 'siteName', label: 'اسم الموقع', type: 'text', maxLength: 150 },
       { name: 'siteNameFull', label: 'الاسم الكامل', type: 'text', maxLength: 200 },
       { name: 'tagline', label: 'الشعار النصي', type: 'text', maxLength: 300 },
-      { name: 'description', label: 'وصف الموقع (SEO)', type: 'textarea', maxLength: 2000 },
+      {
+        name: 'description', label: 'وصف الموقع (SEO)', type: 'textarea', maxLength: 300,
+        help: 'يظهر أيضاً كفقرة التعريف في تذييل كل صفحة — اتركه فارغاً لعرض النص الافتراضي.',
+      },
       {
         name: 'siteUrl', label: 'رابط الموقع', type: 'text', maxLength: 300,
         placeholder: 'https://3mmile.sa',
         pattern: { test: /^https?:\/\/.+/i, message: 'أدخل رابطاً كاملاً يبدأ بـ https://' },
       },
-      { name: 'logo', label: 'الشعار', type: 'image', aspect: '3/1', maxSizeMB: 10 },
+      {
+        name: 'logo', label: 'الشعار', type: 'image', maxSizeMB: 10,
+        spec: 'settings.logo', aspect: cssAspect(MEDIA_SPECS['settings.logo']),
+        help: specHelp(MEDIA_SPECS['settings.logo']),
+      },
       { name: 'logo.alt', label: 'وصف الشعار', type: 'text', maxLength: 300 },
       { name: 'contactPhone', label: 'رقم الهاتف', type: 'text', maxLength: 40, placeholder: '0555555555' },
       {
-        name: 'whatsappNumber', label: 'رقم واتساب', type: 'text', maxLength: 40,
+        name: 'whatsappNumber', label: 'رقم واتساب', type: 'text', maxLength: 15,
         placeholder: '966555555555',
-        pattern: { test: /^\d{8,15}$/, message: 'أرقام فقط بالصيغة الدولية وبدون + أو مسافات — مثال: 966555555555.' },
+        help: 'بالصيغة الدولية: يبدأ برمز الدولة (966) بدون صفر في البداية وبدون + أو مسافات.',
+        // Mirrors siteSetting.validator.js: international format, no leading zero.
+        pattern: { test: /^[1-9]\d{9,14}$/, message: 'يجب أن يبدأ الرقم برمز الدولة بدون صفر (مثال: 966555555555) — أرقام فقط، بدون + أو مسافات.' },
       },
       {
         name: 'contactEmail', label: 'البريد الإلكتروني', type: 'text', maxLength: 200,
         pattern: { test: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'أدخل بريداً إلكترونياً صحيحاً.' },
       },
       { name: 'workingHours', label: 'ساعات العمل', type: 'text', maxLength: 200 },
-      { name: 'mapsEmbedId', label: 'معرّف خريطة جوجل', type: 'text', maxLength: 200 },
       { name: 'rating.score', label: 'التقييم', type: 'text', maxLength: 10, placeholder: '4.9' },
       { name: 'rating.reviewCount', label: 'عدد التقييمات', type: 'number', min: 0 },
-      { name: 'aboutTitle', label: 'عنوان «من نحن»', type: 'text' },
-      { name: 'aboutDescription', label: 'وصف «من نحن»', type: 'textarea' },
-      { name: 'aboutImage', label: 'صورة «من نحن»', type: 'image', aspect: '4/3', maxSizeMB: 10 },
+      { name: 'aboutTitle', label: 'عنوان «من نحن»', type: 'text', maxLength: 80 },
+      { name: 'aboutDescription', label: 'وصف «من نحن»', type: 'textarea', maxLength: 2000 },
+      {
+        name: 'aboutImage', label: 'صورة «من نحن»', type: 'image', maxSizeMB: 10,
+        spec: 'settings.aboutImage', aspect: cssAspect(MEDIA_SPECS['settings.aboutImage']),
+        help: specHelp(MEDIA_SPECS['settings.aboutImage']),
+      },
       {
         name: 'aboutFeatures', label: 'نقاط «من نحن»', type: 'tags',
         help: 'اكتب النقطة ثم اضغط Enter لإضافتها.',
       },
-      { name: 'warrantyPolicy', label: 'نص سياسة الضمان', type: 'textarea' },
       { name: 'socialLinks.facebook', label: 'فيسبوك', type: 'text', placeholder: 'https://facebook.com/…' },
       { name: 'socialLinks.instagram', label: 'إنستغرام', type: 'text', placeholder: 'https://instagram.com/…' },
       { name: 'socialLinks.tiktok', label: 'تيك توك', type: 'text', placeholder: 'https://tiktok.com/@…' },
       { name: 'socialLinks.snapchat', label: 'سناب شات', type: 'text' },
       { name: 'socialLinks.youtube', label: 'يوتيوب', type: 'text' },
       { name: 'socialLinks.twitter', label: 'إكس', type: 'text' },
+
+      // «نصوص الصفحات»: per-page copy. Caps mirror siteSetting.validator.js.
+      { name: 'pageCopy.servicesIntro', label: 'مقدمة صفحة الخدمات', type: 'textarea', maxLength: 400 },
+      { name: 'pageCopy.branchesHeading', label: 'عنوان صفحة الفروع', type: 'text', maxLength: 60 },
+      { name: 'pageCopy.branchesSub', label: 'وصف صفحة الفروع', type: 'text', maxLength: 80 },
+      { name: 'pageCopy.shopIntro', label: 'مقدمة المتجر', type: 'textarea', maxLength: 400, help: 'تظهر فقط في فهرس المتجر — أرشيف كل تصنيف يعرض وصف التصنيف نفسه.' },
+      { name: 'pageCopy.photoGalleryCta', label: 'نص زر معرض الصور', type: 'text', maxLength: 30 },
     ],
   },
 ];

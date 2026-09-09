@@ -4,6 +4,7 @@ import { subRoutes, findSubRoute, decodeSlug, SERVICES_SEGMENT } from '@/data/ro
 import { getSubRouteMetadata } from '@/data/route-metadata';
 import { getService, getServiceSlugs } from '@/data/services';
 import { getServiceContent } from '@/data/service-content';
+import { getSiteSettings } from '@/data/settings';
 import { ServiceDetailPage } from '@/components/pages/ServiceDetailPage';
 import { PhotoGalleryPage } from '@/components/pages/PhotoGalleryPage';
 import { OffersPage } from '@/components/pages/OffersPage';
@@ -48,8 +49,14 @@ export default async function SubRoute({
   if (route.page === 'photo-gallery') return <PhotoGalleryPage />;
   if (route.page === 'offers') return <OffersPage />;
 
-  const service = await getService(decodeSlug(sub));
+  const [service, settings] = await Promise.all([getService(decodeSlug(sub)), getSiteSettings()]);
   const content = service ? await getServiceContent(service.slug) : undefined;
   if (!service || !content) notFound();
-  return <ServiceDetailPage service={service} content={content} />;
+  return (
+    <ServiceDetailPage
+      service={service}
+      content={content}
+      whatsappNumber={settings.whatsappNumber}
+    />
+  );
 }

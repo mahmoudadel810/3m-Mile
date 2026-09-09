@@ -16,11 +16,7 @@ export function WarrantyTabs({ groups }: { groups: WarrantyGroup[] }) {
   const [groupIndex, setGroupIndex] = useState(0);
   const [tierIndex, setTierIndex] = useState(0);
 
-  /*
-    Warranty groups are CMS content, so "none yet" is a real state — and it is the state
-    a fresh install is in. `groups[0]!` threw during prerender and failed the build.
-    Rendering a short notice keeps the page and its heading intact.
-  */
+  // Groups are CMS content, so an empty list is a normal state.
   const group = groups[groupIndex];
   const tier = group ? (group.tiers[tierIndex] ?? group.tiers[0]) : undefined;
 
@@ -71,7 +67,7 @@ export function WarrantyTabs({ groups }: { groups: WarrantyGroup[] }) {
         {/* Tiers */}
         <ul className="grid gap-2 self-start">
           {group.tiers.map((t, i) => (
-            <li key={t.title}>
+            <li key={i}>
               <button
                 type="button"
                 onClick={() => setTierIndex(i)}
@@ -100,9 +96,10 @@ export function WarrantyTabs({ groups }: { groups: WarrantyGroup[] }) {
           <h2 className="mb-1 text-lg font-black md:text-xl">الشروط والأحكام</h2>
           <p className="mb-4 text-base leading-relaxed text-fg-muted">{group.intro}</p>
 
+          {/* Position keys: terms are free text and may repeat across tiers. */}
           <ul className="grid gap-3">
-            {tier.terms.map((term) => (
-              <li key={term} className="flex items-start gap-3 text-base leading-loose">
+            {tier.terms.map((term, i) => (
+              <li key={i} className="flex items-start gap-3 text-base leading-loose">
                 <span className="mt-2 flex size-4 shrink-0 items-center justify-center rounded-full bg-primary text-white">
                   <Icon name="check" size={9} strokeWidth={4} />
                 </span>

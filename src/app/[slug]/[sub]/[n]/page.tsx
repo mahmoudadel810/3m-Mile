@@ -7,10 +7,8 @@ import { BlogIndexPage } from '@/components/pages/BlogIndexPage';
 /**
  * Blog pagination — `{blog}/page/2/` and up.
  *
- * The literal `page` segment arrives as the `[sub]` PARAM and is checked below, rather
- * than being a directory called `page`. That is not a style choice: a route directory
- * with that name sits next to the `page.js` the compiler emits for the same segment, and
- * the collision made every on-demand render throw out of the webpack runtime.
+ * The literal `page` segment arrives as the `[sub]` param and is checked below. A route
+ * directory named `page` collides with the `page.js` the compiler emits for the segment.
  *
  * Page 1 is deliberately absent — it lives at the unpaginated blog URL, so there is no
  * duplicate-content pair.

@@ -1,7 +1,6 @@
 'use client';
 
-import { site } from '@/data/site';
-import { bookingLink, telLink } from '@/lib/whatsapp';
+import { bookingLinkFor } from '@/lib/whatsapp';
 import { Icon, BrandIcon } from '@/components/ui/Icon';
 import { CarScrollTop } from './CarScrollTop';
 
@@ -12,7 +11,7 @@ import { CarScrollTop } from './CarScrollTop';
  * Both wiggle animations and the double pulse ring are reproduced exactly. They carry
  * `data-loop-animation` so reduced-motion stops them while leaving the buttons visible.
  */
-export function FloatingActions() {
+export function FloatingActions({ phone, whatsappNumber }: { phone: string; whatsappNumber: string }) {
   return (
     <>
       {/* WhatsApp — 65px, bottom 140px, with two staggered pulse rings */}
@@ -21,7 +20,7 @@ export function FloatingActions() {
         style={{ insetInlineEnd: 'var(--fab-inset)' }}
       >
         <a
-          href={bookingLink}
+          href={bookingLinkFor(whatsappNumber)}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="تواصل معنا عبر واتساب"
@@ -53,8 +52,8 @@ export function FloatingActions() {
 
       {/* Phone */}
       <a
-        href={telLink}
-        aria-label={`اتصل بنا على ${site.phone}`}
+        href={`tel:${phone}`}
+        aria-label={`اتصل بنا على ${phone}`}
         data-loop-animation
         className="fixed bottom-[50px] z-[99999] flex size-[55px] animate-[fab-wiggle_1.5s_ease-in-out_infinite] items-center justify-center rounded-full bg-primary text-white shadow-[var(--shadow-card)] md:bottom-[60px] md:size-[65px]"
         style={{ insetInlineEnd: 'var(--fab-inset)' }}

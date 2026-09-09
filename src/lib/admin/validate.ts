@@ -49,22 +49,19 @@ const CROSS_FIELD_RULES: Record<
     const errors: FieldErrors = {};
     const hasStored = Boolean(doc?.url);
     if (values.type === 'video') {
-      if (!values.externalId) errors.externalId = 'عناصر الفيديو تحتاج معرّف فيديو يوتيوب.';
+      // A video item is either an uploaded file (`file`) or a YouTube reel (`externalId`).
+      const hasVideo = hasFile('file') || hasStored;
+      if (!values.externalId && !hasVideo) {
+        errors.externalId = 'عناصر الفيديو تحتاج رفع ملف فيديو أو إدخال معرّف يوتيوب.';
+      }
+      if (values.externalId && hasFile('file')) {
+        errors.externalId = 'اختر إما ملف الفيديو أو معرّف يوتيوب، وليس كليهما.';
+      }
     } else if (values.type === 'image') {
       if (values.externalId) errors.externalId = 'معرّف يوتيوب يُستخدم مع عناصر الفيديو فقط — اتركه فارغاً.';
       if (isNew && !hasFile('file')) errors.file = 'يرجى رفع صورة لهذا العنصر.';
       if (!isNew && !hasStored && !hasFile('file')) errors.file = 'يرجى رفع صورة لهذا العنصر.';
     }
-    return errors;
-  },
-
-  // `mapBranch` in lib/api/dto plots a pin only when both halves are set.
-  branches: (values) => {
-    const errors: FieldErrors = {};
-    const top = values['pin.top']?.trim();
-    const start = values['pin.start']?.trim();
-    if (top && !start) errors['pin.start'] = 'أدخل الموضع الأفقي أيضاً، وإلا لن يظهر الدبوس على الخريطة.';
-    if (start && !top) errors['pin.top'] = 'أدخل الموضع الرأسي أيضاً، وإلا لن يظهر الدبوس على الخريطة.';
     return errors;
   },
 };
@@ -164,6 +161,18 @@ export function validateForm({
 
       if (field.maxItems && rows.length > field.maxItems) {
         errors[field.name] = `${field.label}: الحد الأقصى ${field.maxItems} عناصر.`;
+      }
+      if (field.minItems && rows.length < field.minItems) {
+        errors[field.name] = `هذا القسم يحتاج ${field.minItems} عناصر بالضبط.`;
+      }
+    }
+
+    // --- stringList items -------------------------------------------------
+    if (field.type === 'stringList' && field.itemMaxLength) {
+      const items = parseArray(values[field.name] ?? '') as unknown[];
+      const tooLong = items.some((item) => String(item ?? '').length > field.itemMaxLength!);
+      if (tooLong) {
+        errors[field.name] = `${field.label}: كل عنصر بحد أقصى ${field.itemMaxLength} حرفاً.`;
       }
     }
   }

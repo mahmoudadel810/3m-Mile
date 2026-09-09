@@ -8,11 +8,6 @@ const FOCUSABLE =
 /**
  * Everything an overlay needs to behave: body scroll lock, Escape to close, focus moved
  * in and trapped while open, and focus returned to the trigger on close.
- *
- * The source site's overlays do none of this. Its drawer leaves focus behind the scrim
- * (so Tab walks the page underneath), and its promo popup papers over the problem by
- * setting `tabindex="-1"` on its own buttons — which makes them unreachable by keyboard
- * entirely. This hook is the fix for both.
  */
 export function useDismissable(open: boolean, onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);

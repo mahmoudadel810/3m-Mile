@@ -1,19 +1,3 @@
-/**
- * Backend document shapes, and the mappers that turn them into the frontend's types.
- *
- * This file is the entire translation layer. The rule it enforces:
- *
- *   the backend owns TRANSPORT naming  — paths, `_id`, the response envelope
- *   the frontend owns LAYOUT-BEARING shape — named image slots, `Paged<T>`, `{q,a}`
- *
- * Renaming backend fields to match the frontend would break other consumers; renaming
- * frontend fields to match the backend would mean editing components, which the brief
- * forbids unless integration strictly requires it. Mapping once, here, does neither.
- *
- * Mismatches resolved below (see docs/INTEGRATION-AUDIT.md §5):
- *   _id → id            content → contentHTML     publishedAt → date
- *   coverImage → featured                        {question,answer} → {q,a}
- */
 
 export type ApiImageSlot = {
   url: string | null;
@@ -45,6 +29,7 @@ export type ApiBlogPost = {
   tags?: string[];
   publishedAt?: string | null;
   createdAt?: string;
+  isPublished?: boolean;
 };
 
 export type ApiProduct = {
@@ -90,6 +75,7 @@ export type ApiBranch = {
   phone?: string;
   mapUrl?: string;
   pin?: { top?: string; start?: string };
+  location?: { lat?: number; lng?: number };
 };
 
 export type ApiGalleryItem = {
@@ -246,8 +232,12 @@ export const mapBranch = (b: ApiBranch) => ({
   address: b.address ?? '',
   phone: b.phone ?? '',
   mapUrl: b.mapUrl ?? '',
-  // The map overlay needs both halves; a branch with no pin is simply not plotted.
   pin: b.pin?.top && b.pin?.start ? { top: b.pin.top, start: b.pin.start } : null,
+  // Both halves required; the map plots `location`, not `pin`.
+  location:
+    typeof b.location?.lat === 'number' && typeof b.location?.lng === 'number'
+      ? { lat: b.location.lat, lng: b.location.lng }
+      : null,
 });
 
 /** `{question, answer}` on the wire, `{q, a}` in the accordion component. */
@@ -258,11 +248,22 @@ export const mapPartner = (p: ApiPartner) => ({ name: p.name, src: p.logo ?? '' 
 export const mapReview = (r: ApiReview) => ({ src: r.image ?? '', alt: r.alt ?? '' });
 
 /** Video gallery items are YouTube Shorts, identified by `externalId`. */
-export const mapReel = (g: ApiGalleryItem) => ({
-  id: g.externalId || g._id,
-  title: g.title ?? '',
-  description: g.description ?? '',
-});
+export const mapReel = (g: ApiGalleryItem) =>
+  g.externalId
+    ? {
+        kind: 'youtube' as const,
+        id: g.externalId,
+        title: g.title ?? '',
+        description: g.description ?? '',
+      }
+    : {
+        kind: 'file' as const,
+        id: g._id,
+        src: g.url ?? '',
+        poster: g.thumbnailUrl ?? '',
+        title: g.title ?? '',
+        description: g.description ?? '',
+      };
 
 /**
  * Photo gallery items link onward to a service page — the gallery is an internal-linking

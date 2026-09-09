@@ -7,6 +7,7 @@ import type { HomeContent } from '@/data/home';
 import { useCarousel } from '@/hooks/useCarousel';
 import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
+import { safeHref } from '@/lib/safe';
 
 /**
  * The homepage's signature block: three tiles — branches, work gallery, and a rotating
@@ -66,7 +67,7 @@ export function HeroGrid({
           {heroTiles.gallery.actions.map((a) => (
             <Link
               key={a.href}
-              href={a.href}
+              href={safeHref(a.href)}
               aria-label={`معرض ${a.label}`}
               className="flex w-[140px] flex-row items-center justify-start gap-4 text-white no-underline md:w-auto md:flex-col md:gap-0"
             >

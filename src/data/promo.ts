@@ -3,10 +3,8 @@ import { apiGet } from '@/lib/api/client';
 /**
  * The timed promotional overlay.
  *
- * API SEAM — this was a hard-coded record with an `enabled` flag. The backend now owns
- * that flag (`isActive`) and, crucially, returns **null** from the public endpoint when
- * a campaign is off, so the retired campaign's artwork is never served to visitors.
- * Retiring an offer is one toggle in the dashboard; the modal simply stops rendering.
+ * API SEAM — the public endpoint returns null when the campaign is off (`isActive`), so
+ * the modal simply stops rendering.
  */
 
 export type Promo = {

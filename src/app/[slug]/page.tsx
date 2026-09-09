@@ -29,9 +29,7 @@ import { PostPage } from '@/components/pages/PostPage';
  * Three kinds of slug arrive here, resolved in this order:
  *   1. a legacy URL  -> 301 to its canonical target
  *   2. a fixed page  -> the component from `topRoutes`
- *   3. a post slug   -> the article (posts live at the site root, so all
- *                       201 of them are top-level and share this namespace)
- * Verified: no post slug collides with a page slug or a legacy slug.
+ *   3. a post slug   -> the article (posts live at the site root and share this namespace)
  */
 export const dynamicParams = true;
 
@@ -88,11 +86,8 @@ export default async function TopLevelRoute({ params }: { params: Promise<{ slug
 
   const legacy = findLegacyRedirect(slug);
   if (legacy) {
-    // Two things this line has to get right:
-    //  - percent-encoding: Next writes the destination straight into the Location
-    //    header, and a raw Arabic path there is not a valid header value;
-    //  - the trailing slash: appending one unconditionally turned the two `slider-*`
-    //    redirects, whose destination is the site root, into `//`.
+    // Percent-encode: a raw Arabic path is not a valid Location header. Do not append a
+    // slash to a destination that already ends in one (the site root).
     const target = legacy.endsWith('/') ? legacy : `${legacy}/`;
     permanentRedirect(encodeURI(target));
   }

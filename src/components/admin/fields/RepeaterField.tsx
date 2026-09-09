@@ -43,6 +43,7 @@ export function RepeaterField({
   onChange,
   rowFiles,
   onRowFiles,
+  onRowValidity,
   linkOptions,
   errors,
 }: {
@@ -53,6 +54,8 @@ export function RepeaterField({
   /** Staged uploads per row index, for `rowImage` repeaters. */
   rowFiles: Record<number, File[]>;
   onRowFiles: (index: number, files: File[]) => void;
+  /** Reports whether a row's staged pick is clean, for `rowImage` repeaters. */
+  onRowValidity?: (index: number, ok: boolean) => void;
   /** Resolved choices for any `link` sub-field. */
   linkOptions: Option[];
   /** Per-row, per-subfield messages: `${index}.${subName}`. */
@@ -65,20 +68,20 @@ export function RepeaterField({
   const setCell = (index: number, name: string, cell: unknown) =>
     commit(rows.map((row, i) => (i === index ? { ...row, [name]: cell } : row)));
 
-  /*
-    Row images are bound to their index on both sides — the upload slot is
-    `trustImage{index}` and the server pairs it with `existing.trust[index].image`.
-    Reordering would leave the pictures behind, so it is disabled; removal drops every
-    staged file, since the rows after the removed one all shift.
-  */
+  // Row images are bound to their index (`trustImage{index}`), so reordering is disabled.
   const indexBound = Boolean(field.rowImage);
 
   const removeAt = (index: number) => {
     commit(rows.filter((_, i) => i !== index));
     if (indexBound) {
-      for (const key of Object.keys(rowFiles)) onRowFiles(Number(key), []);
+      // Every slot shifts, so clear all staged files and validity flags.
+      for (let i = 0; i < rows.length; i++) {
+        onRowFiles(i, []);
+        onRowValidity?.(i, true);
+      }
     } else {
       onRowFiles(index, []);
+      onRowValidity?.(index, true);
     }
   };
 
@@ -166,6 +169,7 @@ export function RepeaterField({
                     name: `${field.rowImage.slotPrefix}${index}`,
                     type: 'image',
                     aspect: field.rowImage.aspect,
+                    spec: field.rowImage.spec,
                     maxSizeMB: 10,
                     replaceWarning: undefined,
                     help: undefined,
@@ -174,6 +178,7 @@ export function RepeaterField({
                   existing={[String(at(row, field.rowImage.valuePath) ?? '')].filter(Boolean)}
                   files={rowFiles[index] ?? []}
                   onFiles={(files) => onRowFiles(index, files)}
+                  onValidity={(ok) => onRowValidity?.(index, ok)}
                 />
               </div>
             )}

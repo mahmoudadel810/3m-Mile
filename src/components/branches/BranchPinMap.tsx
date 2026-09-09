@@ -1,64 +1,82 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { Branch } from '@/data/branches';
 import { useDismissable } from '@/hooks/useDismissable';
 import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
+import { KsaMap } from './KsaMap';
+import { projectToMap } from '@/lib/geo';
+import { findCity, type KsaCity } from '@/lib/ksaCities';
 
 /**
- * Interactive branch map: percentage-positioned pins over a static map image, each
- * opening a card with the branch's address, a call button and a Google Maps link.
+ * Interactive branch map: one pin per city over the `KsaMap` outline, opening a card
+ * that lists every branch in that city with a call button and a Google Maps link.
  *
- * The source version is already the most accessible widget on the site — its pins
- * respond to Enter and Space and it closes on Escape. Kept, with the pins promoted from
- * `div[tabindex]` to real buttons and the popup given a focus trap.
+ * Coordinates come from `lib/ksaCities.ts`, so all branches in a city share one pin.
+ * A branch whose city is not in the table gets no pin and still appears in the cards.
  *
- * Pin coordinates are percentages of this specific image, so they live beside it in
- * data/branches.ts and must be re-tuned if the map artwork changes.
+ * Pins use the physical `left` property, not `insetInlineStart`: the document is RTL,
+ * and a logical inset would mirror every projected longitude.
  */
 export function BranchPinMap({ branches }: { branches: Branch[] }) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const close = useCallback(() => setOpenId(null), []);
-  const ref = useDismissable(openId !== null, close);
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const close = useCallback(() => setOpenKey(null), []);
+  const ref = useDismissable(openKey !== null, close);
 
-  const active = branches.find((b) => b.id === openId) ?? null;
+  // Group by city in arrival order; unknown cities are skipped.
+  const pins = useMemo(() => {
+    const byKey = new Map<string, { city: KsaCity; items: Branch[] }>();
+    for (const b of branches) {
+      const city = findCity(b.city);
+      if (!city) continue;
+      const entry = byKey.get(city.key);
+      if (entry) entry.items.push(b);
+      else byKey.set(city.key, { city, items: [b] });
+    }
+    return [...byKey.values()];
+  }, [branches]);
+
+  const active = pins.find((p) => p.city.key === openKey) ?? null;
 
   return (
     <div className="relative">
-      <div className="relative mx-auto aspect-square w-full max-w-[620px] rounded-[var(--radius-xl)] bg-glass">
-        {/*
-          The map artwork was a static file and is gone. Pins are positioned as
-          percentages of this box, so they still land where the admin placed them;
-          restoring the backdrop means adding a CMS image slot for it.
-        */}
+      <div className="relative mx-auto aspect-square w-full max-w-[620px] overflow-hidden rounded-[var(--radius-xl)] bg-glass">
+        <KsaMap className="absolute inset-0 size-full" cities={pins.map((p) => p.city)} />
 
-        {/*
-          Only branches the admin has actually positioned are plotted. A branch with no
-          pin still appears in the list below the map — it just has no marker, rather
-          than one stacked at the top-left corner.
-        */}
-        {branches.filter((b): b is Branch & { pin: NonNullable<Branch['pin']> } => Boolean(b.pin)).map((branch) => (
-          <button
-            key={branch.id}
-            type="button"
-            onClick={() => setOpenId(branch.id)}
-            aria-label={`${branch.name} — ${branch.address}`}
-            className={cn(
-              'absolute z-10 flex size-7 -translate-x-1/2 -translate-y-full items-center justify-center',
-              'text-primary transition-transform duration-300 hover:scale-125 focus-visible:scale-125',
-              openId === branch.id && 'scale-125'
-            )}
-            style={{ top: branch.pin.top, insetInlineStart: branch.pin.start }}
-          >
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 animate-ping rounded-full bg-primary/30"
-              data-loop-animation
-            />
-            <Icon name="pin" size={26} className="relative drop-shadow-[0_2px_4px_rgb(0_0_0/0.6)]" />
-          </button>
-        ))}
+        {pins.map(({ city, items }) => {
+          const { xPct, yPct } = projectToMap(city.lat, city.lng);
+          return (
+            <button
+              key={city.key}
+              type="button"
+              onClick={() => setOpenKey(city.key)}
+              aria-label={
+                items.length === 1 && items[0]
+                  ? `${items[0].name} — ${city.name}`
+                  : `${city.name} — ${items.length} فروع`
+              }
+              className={cn(
+                'absolute z-10 flex size-7 -translate-x-1/2 -translate-y-full items-center justify-center',
+                'text-primary transition-transform duration-300 hover:scale-125 focus-visible:scale-125',
+                openKey === city.key && 'scale-125'
+              )}
+              style={{ top: `${yPct}%`, left: `${xPct}%` }}
+            >
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 animate-ping rounded-full bg-primary/30"
+                data-loop-animation
+              />
+              <Icon name="pin" size={26} className="relative drop-shadow-[0_2px_4px_rgb(0_0_0/0.6)]" />
+              {items.length > 1 && (
+                <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-white text-[10px] font-black text-primary">
+                  {items.length}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Popup */}
@@ -87,28 +105,41 @@ export function BranchPinMap({ branches }: { branches: Branch[] }) {
             </button>
 
             <h3 id="branch-popup-title" className="text-xl font-black">
-              {active.name}
+              {active.city.name}
+              {active.items.length > 1 && (
+                <span className="ms-2 text-sm font-bold text-fg-dim">
+                  ({active.items.length} فروع)
+                </span>
+              )}
             </h3>
-            <p className="mt-2 text-base text-fg-muted">{active.address}</p>
 
-            <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <a
-                href={`tel:${active.phone}`}
-                className="inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-line bg-transparent px-5 py-2.5 font-bold text-white transition-colors duration-300 hover:border-primary hover:bg-primary"
-              >
-                <Icon name="phone" size={16} />
-                اتصال
-              </a>
-              <a
-                href={active.mapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-primary px-5 py-2.5 font-bold text-white transition-colors duration-300 hover:bg-white hover:text-primary"
-              >
-                <Icon name="pin" size={16} />
-                الخريطة
-              </a>
-            </div>
+            <ul className="mt-4 grid max-h-[60vh] gap-4 overflow-y-auto">
+              {active.items.map((b) => (
+                <li key={b.id} className="border-t border-line pt-4 first:border-0 first:pt-0">
+                  <p className="font-black">{b.name}</p>
+                  <p className="mt-1 text-sm text-fg-muted">{b.address}</p>
+
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
+                    <a
+                      href={`tel:${b.phone}`}
+                      className="inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-line bg-transparent px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:border-primary hover:bg-primary"
+                    >
+                      <Icon name="phone" size={15} />
+                      اتصال
+                    </a>
+                    <a
+                      href={b.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-white hover:text-primary"
+                    >
+                      <Icon name="pin" size={15} />
+                      الخريطة
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </>
       )}

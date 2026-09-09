@@ -1,21 +1,24 @@
-import { site } from '@/data/site';
 import { getBranches } from '@/data/branches';
 import { getServiceOptions } from '@/data/services';
-import { telLink } from '@/lib/whatsapp';
+import { getSiteSettings } from '@/data/settings';
 import { PageHero } from '@/components/layout/PageHero';
 import { BranchPinMap } from '@/components/branches/BranchPinMap';
 import { WhatsAppForm } from '@/components/forms/WhatsAppForm';
 import { Reveal } from '@/components/ui/Reveal';
 import { Icon, type IconName } from '@/components/ui/Icon';
 
-const cards: { icon: IconName; title: string; value: string; href?: string; ltr?: boolean }[] = [
-  { icon: 'phone', title: 'الجوال', value: site.phone, href: telLink, ltr: true },
-  { icon: 'mail', title: 'البريد الإلكتروني', value: site.email, href: `mailto:${site.email}`, ltr: true },
-  { icon: 'clock', title: 'مواعيد العمل', value: site.hours },
-];
-
 export async function ContactPage() {
-  const [branches, serviceOptions] = await Promise.all([getBranches(), getServiceOptions()]);
+  const [branches, serviceOptions, settings] = await Promise.all([
+    getBranches(),
+    getServiceOptions(),
+    getSiteSettings(),
+  ]);
+
+  const cards: { icon: IconName; title: string; value: string; href?: string; ltr?: boolean }[] = [
+    { icon: 'phone', title: 'الجوال', value: settings.contactPhone, href: `tel:${settings.contactPhone}`, ltr: true },
+    { icon: 'mail', title: 'البريد الإلكتروني', value: settings.contactEmail, href: `mailto:${settings.contactEmail}`, ltr: true },
+    { icon: 'clock', title: 'مواعيد العمل', value: settings.workingHours },
+  ];
 
   return (
     <main id="main">
@@ -73,7 +76,11 @@ export async function ContactPage() {
             </p>
           </Reveal>
           <Reveal delay={80}>
-            <WhatsAppForm serviceOptions={serviceOptions} submitLabel="إرسال الاستفسار عبر واتساب" />
+            <WhatsAppForm
+              serviceOptions={serviceOptions}
+              submitLabel="إرسال الاستفسار عبر واتساب"
+              whatsappNumber={settings.whatsappNumber}
+            />
           </Reveal>
         </div>
       </section>

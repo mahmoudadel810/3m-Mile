@@ -20,9 +20,11 @@ import { Icon } from '@/components/ui/Icon';
 export function ServiceDetail({
   service,
   content,
+  whatsappNumber,
 }: {
   service: Service;
   content: ServiceContent;
+  whatsappNumber: string;
 }) {
   return (
     <>
@@ -66,7 +68,7 @@ export function ServiceDetail({
 
             <Reveal delay={140}>
               <a
-                href={waLink(service.enquiry)}
+                href={waLink(service.enquiry, whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-7 inline-block rounded-[var(--radius-md)] bg-primary px-7 py-3 font-bold text-white transition-colors duration-300 hover:bg-white hover:text-primary"
@@ -141,7 +143,7 @@ export function ServiceDetail({
 
             <Reveal delay={210}>
               <a
-                href={waLink(service.enquiry)}
+                href={waLink(service.enquiry, whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-6 inline-block rounded-[var(--radius-md)] bg-primary px-7 py-3 font-bold text-white transition-colors duration-300 hover:bg-white hover:text-primary"

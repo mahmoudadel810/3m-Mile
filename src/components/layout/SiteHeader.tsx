@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { mainNav } from '@/data/nav';
 import { site } from '@/data/site';
 import type { SiteLogo, SocialLink } from '@/data/settings';
-import { bookingLink } from '@/lib/whatsapp';
+import { bookingLinkFor } from '@/lib/whatsapp';
 import { useScrolled } from '@/hooks/useScrolled';
 import { Icon } from '@/components/ui/Icon';
 import { MobileDrawer } from './MobileDrawer';
@@ -17,14 +17,25 @@ import { cn } from '@/lib/cn';
  * Fixed glass header.
  *
  * Values are the source site's, exactly: rgba(0,0,0,.45) -> .5 background, 5px -> 20px
- * backdrop blur, 8px -> 12px padding, logo 130px -> 100px, all over 0.3s, triggered at
- * scrollY > 50.
+ * backdrop blur, 8px -> 12px padding, all over 0.3s, triggered at scrollY > 50.
  *
- * Fixed here: the source hard-codes `body { padding-top: 90px }` as a guess at header
- * height. We measure the real element and publish it as --header-height, so the offset
+ * Logo is height-bound (40px -> 32px), not width-bound: the logo slot only guarantees a
+ * landscape shape, so bounding the height keeps any asset from growing the header.
+ *
+ * The real element is measured and published as --header-height, so the body's offset
  * stays correct when the logo shrinks or the viewport changes.
  */
-export function SiteHeader({ logo, social }: { logo: SiteLogo | null; social: SocialLink[] }) {
+export function SiteHeader({
+  logo,
+  social,
+  phone,
+  whatsappNumber,
+}: {
+  logo: SiteLogo | null;
+  social: SocialLink[];
+  phone: string;
+  whatsappNumber: string;
+}) {
   const scrolled = useScrolled(50);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -74,8 +85,8 @@ export function SiteHeader({ logo, social }: { logo: SiteLogo | null; social: So
                 height={logo.height ?? 94}
                 priority
                 className={cn(
-                  'block h-auto transition-[width] duration-300',
-                  scrolled ? 'w-[100px]' : 'w-[130px]'
+                  'block w-auto max-w-[200px] transition-[height] duration-300',
+                  scrolled ? 'h-[32px]' : 'h-[40px]'
                 )}
               />
             ) : (
@@ -146,7 +157,7 @@ export function SiteHeader({ logo, social }: { logo: SiteLogo | null; social: So
 
           {/* Desktop booking CTA */}
           <a
-            href={bookingLink}
+            href={bookingLinkFor(whatsappNumber)}
             target="_blank"
             rel="noopener noreferrer"
             className="hidden items-center gap-2 rounded-[var(--radius-sm)] bg-primary px-[18px] py-2 font-bold text-white transition-colors duration-300 hover:bg-white hover:text-primary lg:inline-flex"
@@ -158,7 +169,7 @@ export function SiteHeader({ logo, social }: { logo: SiteLogo | null; social: So
           {/* Mobile: pulsing CTA + hamburger */}
           <div className="flex items-center gap-2.5 lg:hidden">
             <a
-              href={bookingLink}
+              href={bookingLinkFor(whatsappNumber)}
               target="_blank"
               rel="noopener noreferrer"
               data-loop-animation
@@ -180,7 +191,13 @@ export function SiteHeader({ logo, social }: { logo: SiteLogo | null; social: So
         </div>
       </header>
 
-      <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} social={social} />
+      <MobileDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        social={social}
+        phone={phone}
+        whatsappNumber={whatsappNumber}
+      />
     </>
   );
 }

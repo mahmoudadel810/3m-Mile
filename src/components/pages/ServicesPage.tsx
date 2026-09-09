@@ -1,6 +1,8 @@
 import { CmsImage } from '@/components/ui/CmsImage';
 import Link from 'next/link';
 import { getServices } from '@/data/services';
+import { getHomeSections } from '@/data/home';
+import { getPageCopy, getSiteSettings } from '@/data/settings';
 import { waLink } from '@/lib/whatsapp';
 import { PageHero } from '@/components/layout/PageHero';
 import { Reveal } from '@/components/ui/Reveal';
@@ -14,7 +16,12 @@ import { Icon } from '@/components/ui/Icon';
  * use, so adding a ninth service is a data edit.
  */
 export async function ServicesPage() {
-  const services = await getServices();
+  const [services, sections, pageCopy, settings] = await Promise.all([
+    getServices(),
+    getHomeSections(),
+    getPageCopy(),
+    getSiteSettings(),
+  ]);
 
   return (
     <main id="main">
@@ -24,8 +31,8 @@ export async function ServicesPage() {
         <div className="mx-auto w-[95%] max-w-[var(--container-narrow)]">
           <Reveal>
             <p className="mb-8 max-w-[70ch] text-base leading-loose text-fg-muted">
-              نعتني بسيارتك من داخليتها لهيكلها الخارجي ونقدم كل خدمات حماية السيارات
-              باستخدام أحدث التقنيات وأفضل المنتجات الأصلية، اختر الخدمة التي تحتاجها:
+              {pageCopy.servicesIntro ||
+                'نعتني بسيارتك من داخليتها لهيكلها الخارجي ونقدم كل خدمات حماية السيارات باستخدام أحدث التقنيات وأفضل المنتجات الأصلية، اختر الخدمة التي تحتاجها:'}
             </p>
           </Reveal>
 
@@ -62,12 +69,12 @@ export async function ServicesPage() {
 
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                       <a
-                        href={waLink(service.enquiry)}
+                        href={waLink(service.enquiry, settings.whatsappNumber)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block rounded-[var(--radius-md)] bg-primary px-5 py-2 font-bold text-white transition-colors duration-300 hover:bg-white hover:text-primary"
                       >
-                        احجز الآن
+                        {sections.ctaLabel || 'احجز الآن'}
                       </a>
                       <Link
                         href={`/خدمات/${service.slug}`}

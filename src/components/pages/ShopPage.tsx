@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getProducts, getProductsByCategory, getProductCategories, type ProductCategory } from '@/lib/products';
+import { getPageCopy } from '@/data/settings';
 import { PageHero } from '@/components/layout/PageHero';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { Reveal } from '@/components/ui/Reveal';
@@ -20,9 +21,10 @@ import { Reveal } from '@/components/ui/Reveal';
  * anywhere in the navigation.
  */
 export async function ShopPage({ category }: { category?: ProductCategory }) {
-  const [products, categories] = await Promise.all([
+  const [products, categories, pageCopy] = await Promise.all([
     category ? getProductsByCategory(category.slug) : getProducts(),
     getProductCategories(),
+    getPageCopy(),
   ]);
 
   const pill =
@@ -46,6 +48,7 @@ export async function ShopPage({ category }: { category?: ProductCategory }) {
           <Reveal>
             <p className="mb-6 max-w-[70ch] text-base leading-loose text-fg-muted">
               {category?.description ||
+                pageCopy.shopIntro ||
                 'أفلام حماية السيارات PPF وأفلام العزل الحراري الأصلية من 3M، مع ضمان رسمي وتركيب على يد فريق متخصص في جميع فروعنا بالمملكة. اختر المنتج المناسب وتواصل معنا لمعرفة السعر وحجز موعد.'}
             </p>
           </Reveal>

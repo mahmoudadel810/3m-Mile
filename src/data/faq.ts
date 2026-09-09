@@ -9,7 +9,7 @@ import { mapFaq, type ApiFaq } from '@/lib/api/dto';
  *
  * API SEAM — `{q, a}` is kept as the component contract; the backend stores
  * `{question, answer}`. The rename happens once in the DTO mapper rather than in the
- * accordion component. See docs/INTEGRATION-AUDIT.md §5.
+ * accordion component.
  */
 
 export type FaqItem = { q: string; a: string };

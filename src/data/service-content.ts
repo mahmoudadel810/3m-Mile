@@ -4,14 +4,9 @@ import { mapService, type ApiService } from '@/lib/api/dto';
 /**
  * Per-service page copy.
  *
- * The source site renders each service page as a separate Elementor document with the
- * same widget layout and different text. Here the layout is one template
- * (components/services/ServiceDetail.tsx) and this is the copy that fills it.
+ * One template (components/services/ServiceDetail.tsx) and this is the copy that fills it.
  *
- * API SEAM — this was a hand-maintained record keyed by slug; the copy now lives on the
- * Service document itself, because it is per-service content the admin edits alongside
- * that service's images. The type and the accessor signature are unchanged, so
- * `app/[slug]/[sub]/page.tsx` did not change with it.
+ * API SEAM — the copy lives on the Service document, edited alongside that service's images.
  */
 
 export type ServiceContent = {

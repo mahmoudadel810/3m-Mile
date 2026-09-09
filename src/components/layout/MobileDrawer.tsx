@@ -4,12 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { mainNav } from '@/data/nav';
-import { site } from '@/data/site';
 import type { SocialLink } from '@/data/settings';
-import { bookingLink, telLink } from '@/lib/whatsapp';
+import { bookingLinkFor } from '@/lib/whatsapp';
 import { useDismissable } from '@/hooks/useDismissable';
 import { Icon, BrandIcon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
+import { safeHref } from '@/lib/safe';
 
 /**
  * 270px drawer sliding in from the inline-end edge.
@@ -26,10 +26,14 @@ export function MobileDrawer({
   open,
   onClose,
   social,
+  phone,
+  whatsappNumber,
 }: {
   open: boolean;
   onClose: () => void;
   social: SocialLink[];
+  phone: string;
+  whatsappNumber: string;
 }) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -79,7 +83,7 @@ export function MobileDrawer({
           <Icon name="close" size={24} />
         </button>
 
-        <ul className="flex flex-col text-end">
+        <ul className="flex flex-col text-start">
           {mainNav.map((item) => {
             const hasChildren = !!item.children?.length;
             const isOpen = expanded === item.label;
@@ -139,7 +143,7 @@ export function MobileDrawer({
             .map((s) => (
               <a
                 key={s.name}
-                href={s.href}
+                href={safeHref(s.href)}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
@@ -151,14 +155,14 @@ export function MobileDrawer({
         </div>
 
         <p className="mt-6 text-center">
-          <a href={telLink} className="text-lg font-bold text-primary" dir="ltr">
-            {site.phone}
+          <a href={`tel:${phone}`} className="text-lg font-bold text-primary" dir="ltr">
+            {phone}
           </a>
         </p>
 
         <p className="mt-8 mb-5 text-center">
           <a
-            href={bookingLink}
+            href={bookingLinkFor(whatsappNumber)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block rounded-[var(--radius-pill)] bg-primary px-10 py-2.5 font-bold text-white shadow-[var(--shadow-cta)]"

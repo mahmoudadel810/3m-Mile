@@ -57,6 +57,19 @@ export type HomeContent = {
     servicesLabel: string;
   };
   contactBlock: { heading: string; subheading: string; formTitle: string };
+  sections: HomeSections;
+};
+
+/**
+ * Editable section headings and the shared CTA label. Empty string when absent; each
+ * consumer applies its own literal fallback with `||`, since older documents have no
+ * `sections`.
+ */
+export type HomeSections = {
+  partnersHeading: string;
+  partnersSub: string;
+  latestPostsHeading: string;
+  ctaLabel: string;
 };
 
 /** Backend shape of the HomeContent singleton. */
@@ -89,7 +102,31 @@ type ApiHome = {
   stats?: { value?: number; suffix?: string; title?: string }[];
   reviewsIntro?: { heading?: string; description?: string };
   contactBlock?: { heading?: string; subheading?: string; formTitle?: string };
+  sections?: {
+    partnersHeading?: string;
+    partnersSub?: string;
+    latestPostsHeading?: string;
+    ctaLabel?: string;
+  };
 };
+
+function mapSections(h: ApiHome): HomeSections {
+  return {
+    partnersHeading: h.sections?.partnersHeading ?? '',
+    partnersSub: h.sections?.partnersSub ?? '',
+    latestPostsHeading: h.sections?.latestPostsHeading ?? '',
+    ctaLabel: h.sections?.ctaLabel ?? '',
+  };
+}
+
+/**
+ * @endpoint GET /api/v1/home
+ * Sections only, for pages that do not need the partners/reviews fetches.
+ */
+export async function getHomeSections(): Promise<HomeSections> {
+  const home = await apiGet<ApiHome>('/home');
+  return mapSections(home ?? {});
+}
 
 /** @endpoint GET /api/v1/home */
 export async function getHomeContent(): Promise<HomeContent> {
@@ -168,5 +205,7 @@ export async function getHomeContent(): Promise<HomeContent> {
       subheading: h.contactBlock?.subheading ?? '',
       formTitle: h.contactBlock?.formTitle ?? '',
     },
+
+    sections: mapSections(h),
   };
 }

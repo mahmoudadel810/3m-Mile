@@ -3,15 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
- * One carousel for the whole site.
- *
- * The source ships four separate hand-rolled sliders — the hero service crossfade, the
- * reviews track, the Swiper reels, and the posts rail — each with its own bugs. The
- * posts rail even has its arrows semantically swapped (its "next" button scrolls
- * `left: -320`). This hook is direction-aware, so RTL is handled once.
- *
- * Autoplay pauses when the carousel scrolls out of view, matching the source's own
- * IntersectionObserver behaviour, and stops entirely under reduced motion.
+ * One direction-aware carousel for the whole site, so RTL is handled once. Autoplay
+ * pauses when the carousel scrolls out of view and stops under reduced motion.
  */
 export function useCarousel({
   count,

@@ -45,7 +45,7 @@ function LoginForm() {
         return;
       }
 
-      setSession(body.data.accessToken, body.data.user);
+      setSession(body.data.accessToken, body.data.user, body.data.refreshToken);
       // `replace`, not `push`: the login page must not sit in history behind the
       // dashboard, or Back would land on it while signed in.
       router.replace(from && from.startsWith('/admin') ? from : '/admin');

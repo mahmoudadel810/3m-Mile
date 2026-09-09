@@ -32,15 +32,31 @@ export function Pagination({
   page,
   totalPages,
   hrefFor,
+  onChange,
 }: {
   page: number;
   totalPages: number;
-  hrefFor: (n: number) => string;
+  /** Link-based navigation (public pages). */
+  hrefFor?: (n: number) => string;
+  /** Client-side switch (admin lists); controls render as buttons instead of links. */
+  onChange?: (page: number) => void;
 }) {
   if (totalPages <= 1) return null;
 
   const base =
     'flex size-9 items-center justify-center rounded-[var(--radius-sm)] border border-line text-sm font-bold transition-colors duration-300';
+  const linkClasses = `${base} bg-glass text-fg hover:border-primary hover:text-primary`;
+
+  const go = (n: number) =>
+    onChange ? (
+      <button type="button" onClick={() => onChange(n)} className={linkClasses} aria-label={`الصفحة ${n}`}>
+        {n}
+      </button>
+    ) : (
+      <Link href={hrefFor!(n)} className={linkClasses} aria-label={`الصفحة ${n}`}>
+        {n}
+      </Link>
+    );
 
   return (
     <nav aria-label="تصفح الصفحات" className="mt-10 flex justify-center">
@@ -57,13 +73,7 @@ export function Pagination({
                   {p}
                 </span>
               ) : (
-                <Link
-                  href={hrefFor(p)}
-                  className={`${base} bg-glass text-fg hover:border-primary hover:text-primary`}
-                  aria-label={`الصفحة ${p}`}
-                >
-                  {p}
-                </Link>
+                go(p)
               )}
             </li>
           )
@@ -71,15 +81,22 @@ export function Pagination({
 
         {page < totalPages && (
           <li>
-            <Link
-              href={hrefFor(page + 1)}
-              className={`${base} bg-glass text-fg hover:border-primary hover:text-primary`}
-              aria-label="الصفحة التالية"
-              rel="next"
-            >
-              {/* rtl-flip so the chevron points along the reading direction */}
-              <Icon name="chevronEnd" size={14} className="rtl-flip" />
-            </Link>
+            {onChange ? (
+              <button
+                type="button"
+                onClick={() => onChange(page + 1)}
+                className={linkClasses}
+                aria-label="الصفحة التالية"
+              >
+                {/* rtl-flip so the chevron points along the reading direction */}
+                <Icon name="chevronEnd" size={14} className="rtl-flip" />
+              </button>
+            ) : (
+              <Link href={hrefFor!(page + 1)} className={linkClasses} aria-label="الصفحة التالية" rel="next">
+                {/* rtl-flip so the chevron points along the reading direction */}
+                <Icon name="chevronEnd" size={14} className="rtl-flip" />
+              </Link>
+            )}
           </li>
         )}
       </ol>

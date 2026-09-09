@@ -22,8 +22,10 @@ export type Branch = {
   address: string;
   phone: string;
   mapUrl: string;
-  /** Position on the branches map, as a percentage of the image box. Null = not plotted. */
+  /** Legacy percentage position; still in the API schema, not read by the map. */
   pin: { top: string; start: string } | null;
+  /** Real coordinates, projected by `projectToMap`. Null when either half is missing. */
+  location: { lat: number; lng: number } | null;
 };
 
 export type BranchCityGroup = { city: string; items: Branch[] };

@@ -36,15 +36,6 @@ export const site = {
   // Social profiles are CMS-managed — see `getSocialLinks` in data/settings.ts. Add or
   // retire an account on the dashboard's site-settings screen, not here.
 
-  /** Google MyMaps layer holding all 12 branches. */
-  mapsEmbedId: '1Idn61qGyS0wgcxxnJSwBGqsdJ4sTqds',
-  get mapsViewerUrl() {
-    return `https://www.google.com/maps/d/viewer?mid=${this.mapsEmbedId}`;
-  },
-  get mapsEmbedUrl() {
-    return `https://www.google.com/maps/d/embed?mid=${this.mapsEmbedId}&ehbc=2E312F`;
-  },
-
   stats: {
     rating: '5.0',
     reviewCount: 450,

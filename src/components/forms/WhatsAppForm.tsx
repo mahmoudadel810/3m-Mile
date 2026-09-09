@@ -7,14 +7,12 @@ import { cn } from '@/lib/cn';
 
 /**
  * The site's only form pattern. There is no backend: submitting composes a message and
- * opens a WhatsApp deep link, exactly as the source does.
+ * opens a WhatsApp deep link.
  *
  * One component covers all three usages — homepage, contact page, and the packages
- * booking form — differing only by which fields are switched on.
- *
- * Fixes over the source: real <label>s (it uses placeholders alone, which vanish on
- * focus and are invisible to screen readers), `inputMode="numeric"` on the phone field,
- * and an aria-live confirmation after submit.
+ * booking form — differing only by which fields are switched on. Real <label>s (visually
+ * hidden), `inputMode="numeric"` on the phone field, and an aria-live confirmation after
+ * submit.
  */
 export function WhatsAppForm({
   serviceOptions,
@@ -24,6 +22,7 @@ export function WhatsAppForm({
   withBranch = false,
   submitLabel = 'إرسال',
   className,
+  whatsappNumber,
 }: {
   serviceOptions: string[];
   /** Only needed when `withBranch` is on. */
@@ -33,6 +32,7 @@ export function WhatsAppForm({
   withBranch?: boolean;
   submitLabel?: string;
   className?: string;
+  whatsappNumber: string;
 }) {
   const [sent, setSent] = useState(false);
   const [values, setValues] = useState({
@@ -52,7 +52,7 @@ export function WhatsAppForm({
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    window.open(enquiryLink(values), '_blank', 'noopener,noreferrer');
+    window.open(enquiryLink(values, whatsappNumber), '_blank', 'noopener,noreferrer');
     setSent(true);
   };
 
@@ -173,8 +173,7 @@ function Field({
 }) {
   return (
     <p className={cn('m-0', full && 'md:col-span-2')}>
-      {/* The source uses placeholders as the only labels; these are real, visually
-          hidden so the layout is unchanged but the fields are announced properly. */}
+      {/* Visually hidden so the layout is unchanged; the field is still announced properly. */}
       <label htmlFor={htmlFor} className="sr-only">
         {label}
       </label>

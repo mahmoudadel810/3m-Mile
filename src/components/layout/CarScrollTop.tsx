@@ -4,13 +4,7 @@ import { useScrolled } from '@/hooks/useScrolled';
 import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
 
-/**
- * Scroll-to-top button, shown once the page passes 600px.
- *
- * The source site draws this as a car that drives in from off-screen. That artwork was a
- * static file and is gone; the button keeps the entry motion and renders an arrow.
- * Restoring the car means adding a CMS image slot for it, not a file in `public/`.
- */
+/** Scroll-to-top button, shown once the page passes 600px. Drives in from off-screen like the source. */
 export function CarScrollTop() {
   const visible = useScrolled(600);
 

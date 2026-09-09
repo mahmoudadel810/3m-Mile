@@ -45,16 +45,8 @@ export const topRoutes: RouteDef[] = [
 export const SERVICES_SEGMENT = 'خدمات';
 
 /**
- * Two-level routes with a FIXED second segment: the photo gallery and the offers page.
- *
- * Service detail pages are deliberately absent. Their slugs used to be spread in from a
- * hard-coded array, but services are CMS content now — the admin can add one at any
- * time, and a route table baked at build time would 404 it. Any `/خدمات/{sub}` is
- * therefore recognised structurally by `findSubRoute`, and the actual list of slugs is
- * fetched by `generateStaticParams` in the dispatcher.
- *
- * This keeps the file's original invariant intact: route STRUCTURE stays frontend-owned
- * and synchronous; only which content exists at those URLs comes from the backend.
+ * Two-level routes with a fixed second segment. Service detail pages are CMS content and
+ * are matched structurally by `findSubRoute` instead.
  */
 export const subRoutes: RouteDef[] = [
   { slug: 'معرض-الفيديو', sub: 'معرض-الصور', page: 'photo-gallery' },
@@ -86,11 +78,10 @@ export const findSubRoute = (slug: string, sub: string): RouteDef | undefined =>
 };
 
 /**
- * Legacy URLs still linked from the live site's own markup, each traced with a no-follow
- * HEAD request. Two were double redirects on the old platform, collapsed to one hop.
+ * Legacy URLs still linked from the live site's own markup.
  *
  * These live here rather than in `next.config.ts` because non-ASCII `redirects()`
- * sources fail to match for the same reason non-ASCII route directories do. Handled as
+ * sources fail to match, the same reason non-ASCII route directories do. Handled as
  * params instead, which works.
  */
 export const legacyRedirects: Record<string, string> = {

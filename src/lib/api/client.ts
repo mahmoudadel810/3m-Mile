@@ -3,7 +3,6 @@
  *
  * Everything the site reads goes through here, which is what keeps the envelope,
  * pagination and error handling in one place instead of spread across page components.
- * See `docs/INTEGRATION-AUDIT.md` in the server repo for the full contract audit.
  *
  * THE BACKEND ENVELOPE
  *
@@ -21,6 +20,9 @@
  * degrades to it, logged server-side. Writes (the admin dashboard) do the opposite —
  * see `postForm` — because an admin who clicks Save needs to know it failed.
  */
+
+// Circular with `admin/auth.ts`, but safe: neither side is used at module top level.
+import { refreshSession } from '@/lib/admin/auth';
 
 const BASE_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000/api/v1'
@@ -44,6 +46,34 @@ export type Paged<T> = { items: T[]; page: number; totalPages: number; total: nu
 
 export const apiUrl = (path: string) => `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 
+// Request deadlines. Without them a hung API holds a server worker open indefinitely,
+// since `try/catch` catches rejections, not hangs.
+const READ_TIMEOUT_MS = 5_000;
+const WRITE_TIMEOUT_MS = 60_000;
+// Uploads are slow: the API base64-encodes the file and uploads to Cloudinary synchronously
+// (roughly 12s per MB), and the gallery slot accepts up to 50 MB.
+const UPLOAD_TIMEOUT_MS = 600_000;
+
+/** `AbortSignal.timeout`, or undefined on runtimes without it. */
+const timeoutSignal = (ms: number): AbortSignal | undefined => {
+  try {
+    return AbortSignal.timeout?.(ms);
+  } catch {
+    return undefined;
+  }
+};
+
+const isTimeout = (error: unknown): boolean =>
+  error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+
+/** Retry a 401 once after a silent token refresh; returns the original 401 if refresh fails. */
+async function withRefresh(run: (token: string) => Promise<Response>, token: string): Promise<Response> {
+  const first = await run(token);
+  if (first.status !== 401) return first;
+  const fresh = await refreshSession();
+  return fresh ? run(fresh) : first;
+}
+
 type GetOptions = {
   /** Seconds; `false` opts out of caching entirely (used by the admin). */
   revalidate?: number | false;
@@ -60,6 +90,7 @@ export async function apiGet<T>(path: string, options: GetOptions = {}): Promise
   try {
     const res = await fetch(apiUrl(path), {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      signal: timeoutSignal(READ_TIMEOUT_MS),
       ...(revalidate === false ? { cache: 'no-store' } : { next: { revalidate } }),
     });
 
@@ -74,8 +105,9 @@ export async function apiGet<T>(path: string, options: GetOptions = {}): Promise
     const body = (await res.json()) as Envelope<T>;
     return body?.data ?? null;
   } catch (error) {
-    // Backend down, DNS failure, connection refused. The page still renders.
-    console.error(`[api] GET ${path} failed:`, (error as Error).message);
+    // Network failure or our own deadline; the page renders from the caller's fallback.
+    const reason = isTimeout(error) ? `timed out after ${READ_TIMEOUT_MS}ms` : (error as Error).message;
+    console.error(`[api] GET ${path} failed:`, reason);
     return null;
   }
 }
@@ -141,11 +173,16 @@ export async function sendForm<T>(
   token: string,
 ): Promise<ApiResult<T>> {
   try {
-    const res = await fetch(apiUrl(path), {
-      method,
-      headers: { Authorization: `Bearer ${token}` },
-      body,
-    });
+    const res = await withRefresh(
+      (t) =>
+        fetch(apiUrl(path), {
+          method,
+          headers: { Authorization: `Bearer ${t}` },
+          body,
+          signal: timeoutSignal(UPLOAD_TIMEOUT_MS),
+        }),
+      token,
+    );
 
     const payload = await res.json().catch(() => null);
 
@@ -154,7 +191,8 @@ export async function sendForm<T>(
     }
     return { ok: true, data: payload?.data as T };
   } catch (error) {
-    console.error('[api] write failed:', (error as Error).message);
+    const reason = isTimeout(error) ? `timed out after ${UPLOAD_TIMEOUT_MS}ms` : (error as Error).message;
+    console.error('[api] upload failed:', reason);
     return { ok: false, error: NETWORK_MESSAGE, network: true };
   }
 }
@@ -167,11 +205,16 @@ export async function sendJson<T>(
   token: string,
 ): Promise<ApiResult<T>> {
   try {
-    const res = await fetch(apiUrl(path), {
-      method,
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json; charset=utf-8' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
+    const res = await withRefresh(
+      (t) =>
+        fetch(apiUrl(path), {
+          method,
+          headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json; charset=utf-8' },
+          body: body === undefined ? undefined : JSON.stringify(body),
+          signal: timeoutSignal(WRITE_TIMEOUT_MS),
+        }),
+      token,
+    );
 
     const payload = await res.json().catch(() => null);
 
@@ -180,7 +223,8 @@ export async function sendJson<T>(
     }
     return { ok: true, data: payload?.data as T };
   } catch (error) {
-    console.error('[api] write failed:', (error as Error).message);
+    const reason = isTimeout(error) ? `timed out after ${WRITE_TIMEOUT_MS}ms` : (error as Error).message;
+    console.error('[api] write failed:', reason);
     return { ok: false, error: NETWORK_MESSAGE, network: true };
   }
 }

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AdminField, Option, ResourceConfig } from '@/lib/admin/resources';
 import { SITE_PAGES } from '@/lib/admin/resources';
 import { validateForm, type FieldErrors } from '@/lib/admin/validate';
+import { useUnsavedGuard } from '@/lib/admin/unsavedGuard';
 import { apiUrl } from '@/lib/api/client';
 import { ImageField } from './fields/ImageField';
 import { TagsField } from './fields/TagsField';
@@ -28,7 +29,8 @@ const get = (obj: unknown, path: string): unknown =>
  */
 const initialValue = (field: AdminField, doc: Row | null): string => {
   if (!doc) return field.type === 'repeater' || field.type === 'stringList' ? '[]' : '';
-  const raw = get(doc, field.name);
+  // `from` is the stored path when it differs from the submitted name (`heroImageAlt` → `heroImage.alt`).
+  const raw = get(doc, field.from ?? field.name);
 
   switch (field.type) {
     case 'repeater': {
@@ -113,7 +115,11 @@ export function ResourceForm({
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [rowErrors, setRowErrors] = useState<Record<string, Record<string, string>>>({});
+  /** Slots holding a rejected pick, keyed like `files`. Save is disabled while any is true. */
+  const [invalidUploads, setInvalidUploads] = useState<Record<string, boolean>>({});
   const formRef = useRef<HTMLFormElement>(null);
+  /** What the form was loaded with, to tell edits apart from untouched fields. */
+  const pristine = useRef<Record<string, string>>({});
 
   const isNew = !doc;
 
@@ -127,11 +133,19 @@ export function ResourceForm({
       }
       next[field.name] = initialValue(field, doc);
     }
+    pristine.current = next;
     setValues(next);
     setFiles({});
     setErrors({});
     setRowErrors({});
+    setInvalidUploads({});
   }, [config, doc]);
+
+  // Dirty when values differ from the loaded snapshot or any upload is staged.
+  const isDirty =
+    Object.keys(pristine.current).some((k) => values[k] !== pristine.current[k]) ||
+    Object.values(files).some((list) => list.length > 0);
+  useUnsavedGuard(isDirty);
 
   /**
    * Choices for relation and link fields, loaded once per form. A `link` option's label
@@ -277,6 +291,11 @@ export function ResourceForm({
     setErrors((e) => (e[name] ? { ...e, [name]: '' } : e));
   };
 
+  const setSlotValidity = (name: string, ok: boolean) =>
+    setInvalidUploads((v) => (v[name] === !ok ? v : { ...v, [name]: !ok }));
+
+  const hasInvalidUpload = Object.values(invalidUploads).some(Boolean);
+
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -341,6 +360,7 @@ export function ResourceForm({
               invalid={Boolean(message)}
               onText={(v) => set(field.name, v)}
               onFiles={setSlotFiles}
+              onValidity={setSlotValidity}
             />
 
             {message ? (
@@ -361,7 +381,8 @@ export function ResourceForm({
       <div className="sticky bottom-0 flex gap-3 border-t border-line bg-ink py-4">
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || hasInvalidUpload}
+          title={hasInvalidUpload ? 'صحّح مقاس الملف المرفوض قبل الحفظ.' : undefined}
           className="rounded-[var(--radius-sm)] bg-primary px-5 py-2 font-bold text-white disabled:opacity-50"
         >
           {busy ? 'جارٍ الحفظ…' : 'حفظ'}
@@ -394,6 +415,7 @@ function FieldInput({
   invalid,
   onText,
   onFiles,
+  onValidity,
 }: {
   field: AdminField;
   id: string;
@@ -406,6 +428,8 @@ function FieldInput({
   invalid: boolean;
   onText: (v: string) => void;
   onFiles: (name: string, files: File[]) => void;
+  /** Reports whether the slot named `name` currently holds a clean pick. */
+  onValidity: (name: string, ok: boolean) => void;
 }) {
   const border = invalid ? 'border-primary' : 'border-line';
 
@@ -526,7 +550,16 @@ function FieldInput({
       return <TagsField id={id} value={value} onChange={onText} placeholder={field.placeholder} invalid={invalid} />;
 
     case 'stringList':
-      return <StringListField id={id} value={value} onChange={onText} maxItems={field.maxItems} placeholder={field.placeholder} />;
+      return (
+        <StringListField
+          id={id}
+          value={value}
+          onChange={onText}
+          maxItems={field.maxItems}
+          itemMaxLength={field.itemMaxLength}
+          placeholder={field.placeholder}
+        />
+      );
 
     case 'repeater':
       return (
@@ -538,6 +571,7 @@ function FieldInput({
           errors={rowErrors}
           rowFiles={rowFilesFor(field, files)}
           onRowFiles={(index, list) => onFiles(`${field.rowImage?.slotPrefix ?? field.name}${index}`, list)}
+          onRowValidity={(index, ok) => onValidity(`${field.rowImage?.slotPrefix ?? field.name}${index}`, ok)}
         />
       );
 
@@ -550,22 +584,34 @@ function FieldInput({
           existing={existingImages}
           files={files[field.name] ?? []}
           onFiles={(list) => onFiles(field.name, list)}
+          onValidity={(ok) => onValidity(field.name, ok)}
           invalid={invalid}
         />
       );
 
     default:
       return (
-        <input
-          id={id}
-          type="text"
-          value={value}
-          placeholder={field.placeholder}
-          maxLength={field.maxLength}
-          onChange={(e) => onText(e.target.value)}
-          aria-invalid={invalid}
-          className={`${inputClass} ${border}`}
-        />
+        <>
+          <input
+            id={id}
+            type="text"
+            value={value}
+            placeholder={field.placeholder}
+            maxLength={field.maxLength}
+            // `<datalist>` suggests without constraining the value.
+            list={field.suggestions?.length ? `${id}-suggestions` : undefined}
+            onChange={(e) => onText(e.target.value)}
+            aria-invalid={invalid}
+            className={`${inputClass} ${border}`}
+          />
+          {field.suggestions?.length ? (
+            <datalist id={`${id}-suggestions`}>
+              {field.suggestions.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+          ) : null}
+        </>
       );
   }
 }

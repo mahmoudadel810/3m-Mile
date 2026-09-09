@@ -25,8 +25,7 @@ export function PostCard({ post, priority = false }: { post: PostSummary; priori
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          // 0 posts lack a featured image today, but a backend could return one that
-          // does; a bare grey box is better than a broken <img>.
+          // No featured image: a grey box, not a broken <img>.
           <span aria-hidden="true" className="block size-full bg-surface-2" />
         )}
       </Link>

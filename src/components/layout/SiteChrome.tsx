@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import type { Promo } from '@/data/promo';
 import type { SiteLogo, SocialLink } from '@/data/settings';
 import { SiteHeader } from './SiteHeader';
-import { SiteFooter } from './SiteFooter';
+import { SiteFooter, type FooterService } from './SiteFooter';
 import { FloatingActions } from './FloatingActions';
 import { PromoModal } from './PromoModal';
 
@@ -26,11 +26,22 @@ export function SiteChrome({
   promo,
   logo,
   social,
+  phone,
+  whatsappNumber,
+  footerDescription,
+  footerEmail,
+  footerServices,
   children,
 }: {
   promo: Promo | null;
   logo: SiteLogo | null;
   social: SocialLink[];
+  /** CMS-driven, shared by header, footer and floating actions. */
+  phone: string;
+  whatsappNumber: string;
+  footerDescription: string;
+  footerEmail: string;
+  footerServices: FooterService[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -48,11 +59,17 @@ export function SiteChrome({
       >
         تخطَّ إلى المحتوى
       </a>
-      <SiteHeader logo={logo} social={social} />
+      <SiteHeader logo={logo} social={social} phone={phone} whatsappNumber={whatsappNumber} />
       {children}
-      <SiteFooter social={social} />
-      <FloatingActions />
-      <PromoModal promo={promo} />
+      <SiteFooter
+        social={social}
+        description={footerDescription}
+        phone={phone}
+        email={footerEmail}
+        services={footerServices}
+      />
+      <FloatingActions phone={phone} whatsappNumber={whatsappNumber} />
+      <PromoModal promo={promo} whatsappNumber={whatsappNumber} />
     </>
   );
 }

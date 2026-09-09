@@ -6,6 +6,7 @@ import { site } from '@/data/site';
 import { PageHero } from '@/components/layout/PageHero';
 import { PostCard } from '@/components/blog/PostCard';
 import { Reveal } from '@/components/ui/Reveal';
+import { jsonLdHtml } from '@/lib/safe';
 
 /**
  * A single article.
@@ -39,9 +40,7 @@ export function PostPage({
     image: post.featured ? `${site.url}${post.featured.url}` : undefined,
     mainEntityOfPage: `${site.url}/${post.slug}`,
     author: { '@type': 'Organization', name: site.nameFull },
-    // No publisher logo: the artwork is CMS-managed now and this JSON-LD is built
-    // statically. (The old interpolation also serialized the logo *object* into the
-    // URL, emitting "[object Object]".) `logo` is optional in schema.org.
+    // No publisher logo: the artwork is CMS-managed and `logo` is optional in schema.org.
     publisher: {
       '@type': 'Organization',
       name: site.nameFull,
@@ -52,7 +51,7 @@ export function PostPage({
     <main id="main">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <PageHero
@@ -83,6 +82,7 @@ export function PostPage({
           </div>
 
           {post.featured && (
+            // `max-w-full`, not `w-full`: never upscale the cover past its own pixels.
             <Image
               src={post.featured.url}
               alt={post.featured.alt || post.title}
@@ -90,7 +90,7 @@ export function PostPage({
               height={post.featured.height ?? 750}
               priority
               sizes="(max-width: 1100px) 95vw, 1100px"
-              className="mb-8 h-auto w-full rounded-[var(--radius-xl)]"
+              className="mx-auto mb-8 block h-auto max-w-full rounded-[var(--radius-xl)]"
             />
           )}
 

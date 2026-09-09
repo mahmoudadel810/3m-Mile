@@ -5,13 +5,18 @@ import { site } from '@/data/site';
  * wa.me URL may be constructed.
  */
 
-/** A prefilled WhatsApp deep link. */
-export function waLink(text?: string): string {
-  const base = `https://wa.me/${site.whatsapp}`;
+/** A prefilled WhatsApp deep link. `number` is the CMS value; omitted, the `site.ts` literal is used. */
+export function waLink(text?: string, number?: string): string {
+  const base = `https://wa.me/${number || site.whatsapp}`;
   return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }
 
-/** The generic "book an appointment" link used by the header and floating buttons. */
+/** The "book an appointment" link with the CMS number. */
+export function bookingLinkFor(number?: string): string {
+  return waLink('ابي حجز موعد', number);
+}
+
+/** Static "book an appointment" link, for components without settings in hand. */
 export const bookingLink = waLink('ابي حجز موعد');
 
 /** `tel:` link for the main line. */
@@ -42,6 +47,6 @@ export function enquiryMessage(fields: EnquiryFields): string {
   return lines.join('\n');
 }
 
-export function enquiryLink(fields: EnquiryFields): string {
-  return waLink(enquiryMessage(fields));
+export function enquiryLink(fields: EnquiryFields, number?: string): string {
+  return waLink(enquiryMessage(fields), number);
 }
