@@ -13,9 +13,9 @@ import { Reveal } from '@/components/ui/Reveal';
 /**
  * Seasonal offers landing page.
  *
- * Reuses TrustStrip and WhatsAppForm from the homepage — on the source these are
- * duplicated blocks of hand-written HTML, which is why their markup has already drifted
- * between the two pages. The booking form here adds the branch picker.
+ * Reuses TrustStrip and WhatsAppForm from the homepage rather than duplicating their
+ * markup, so the two pages cannot drift apart. The booking form here adds the branch
+ * picker.
  */
 export async function OffersPage() {
   const [offers, offersPage, home, serviceOptions, branches, settings] = await Promise.all([

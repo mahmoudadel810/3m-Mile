@@ -6,8 +6,8 @@ export type Crumb = { label: string; href?: string };
 /**
  * The page cover every non-home route carries: a breadcrumb trail above the H1.
  *
- * Matches the source's `.page_cover` block. The trail is a real <nav> with an ordered
- * list, which the theme's version is not.
+ * The trail is a real <nav> with an ordered list, so assistive tech announces it as a
+ * breadcrumb rather than as loose links.
  */
 export function PageHero({ title, crumbs = [] }: { title: string; crumbs?: Crumb[] }) {
   return (

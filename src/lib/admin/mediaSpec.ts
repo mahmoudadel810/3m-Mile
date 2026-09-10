@@ -32,7 +32,7 @@ export type MediaSpec = {
   aspect: number;
   /** '1:1', '10:11', '1100:570' */
   aspectLabel: string;
-  /** Recommended px (2× the reference CSS box at 1440, rounded). */
+  /** Recommended px (2× the rendered CSS box at 1440, rounded). */
   width: number;
   height: number;
   minWidth: number;

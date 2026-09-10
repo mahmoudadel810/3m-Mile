@@ -8,9 +8,9 @@ import { cn } from '@/lib/cn';
 /**
  * Warranty browser: service group across the top, cover tier down the side.
  *
- * The source builds this entirely in JavaScript from an inline `TERMS_DB`, so nothing is
- * in the served HTML. Here every group and tier is rendered server-side; the tabs only
- * control which panel is visible, and the hidden ones stay in the DOM.
+ * Every group and tier is rendered server-side, so the whole terms table is in the served
+ * HTML and indexable. The tabs only control which panel is visible; the hidden ones stay
+ * in the DOM rather than being built in JavaScript on demand.
  */
 export function WarrantyTabs({ groups }: { groups: WarrantyGroup[] }) {
   const [groupIndex, setGroupIndex] = useState(0);

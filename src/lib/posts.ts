@@ -37,7 +37,8 @@ export type Category = {
   description: string;
 };
 
-/** Posts per page on the blog index and category archives, matching the live site. */
+/** Posts per page on the blog index and category archives. Fixed — changing it changes
+ *  every indexed pagination URL. */
 export const POSTS_PER_PAGE = 9;
 
 export type { Paged };

@@ -2,9 +2,9 @@ import Link from 'next/link';
 import { cn } from '@/lib/cn';
 
 /**
- * Every CTA on the source site is one of four shapes. All of them invert on hover —
- * that colour flip is the brand's signature button behaviour, present on the header
- * book button, the hero CTA, the why-us pill, and the footer map button.
+ * Every CTA on the site is one of these four shapes. All of them invert on hover — that
+ * colour flip is the brand's signature button behaviour, present on the header book
+ * button, the hero CTA, the why-us pill, and the footer map button.
  */
 const variants = {
   /** Header book button, form submits. Red fill -> white fill. */

@@ -31,8 +31,9 @@ export type EnquiryFields = {
 };
 
 /**
- * Mirrors the message format the live site sends, so the team's WhatsApp inbox keeps
- * looking exactly as it does today. Empty fields are omitted rather than sent blank.
+ * The enquiry message format the team's WhatsApp inbox expects. Keep the field order and
+ * labels stable — they read these at a glance. Empty fields are omitted rather than sent
+ * blank.
  */
 export function enquiryMessage(fields: EnquiryFields): string {
   const lines = [

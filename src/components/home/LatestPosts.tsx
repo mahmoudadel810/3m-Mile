@@ -10,12 +10,11 @@ import { Icon } from '@/components/ui/Icon';
 /**
  * Latest posts — a horizontally scrollable rail of the six newest.
  *
- * The source fetches these client-side on every page load, showing a
- * skeleton until the request lands. They are passed in as props here and rendered at
- * build time, so the section is present in the HTML.
+ * Passed in as props and rendered at build time rather than fetched client-side, so the
+ * section is present in the HTML with no skeleton state.
  *
- * Its arrows are also semantically swapped on the source ("next" scrolls `left: -320`);
- * these scroll by the inline axis, which is correct in both directions.
+ * The arrows scroll by the inline axis, so "next" means next in both RTL and LTR — a
+ * hard-coded pixel direction gets this backwards in one of them.
  */
 export function LatestPosts({
   posts,

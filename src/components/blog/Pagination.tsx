@@ -7,10 +7,9 @@ import { Icon } from '@/components/ui/Icon';
  * `hrefFor(1)` must return the unpaginated URL — page 1 is served at the blog root and
  * page 2 at `{root}/page/2/`; preserving that avoids a duplicate-content pair.
  *
- * The window mirrors the source's: the first three pages, the last page, the current
- * page's neighbours, and an ellipsis for each gap — so page 1 of 23 reads "1 2 3 … 23",
- * exactly as the live site does. Rendered as a real <nav> with an ordered list, which the
- * theme's version is not.
+ * The window shows the first three pages, the last page, the current page's neighbours,
+ * and an ellipsis for each gap — so page 1 of 23 reads "1 2 3 … 23". Rendered as a real
+ * <nav> with an ordered list, so it is navigable by keyboard and screen reader.
  */
 function pageWindow(current: number, total: number): (number | 'gap')[] {
   const keep = new Set([1, 2, 3, total, current, current - 1, current + 1]);

@@ -4,7 +4,7 @@ import { useScrolled } from '@/hooks/useScrolled';
 import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
 
-/** Scroll-to-top button, shown once the page passes 600px. Drives in from off-screen like the source. */
+/** Scroll-to-top button, shown once the page passes 600px. Drives in from off-screen. */
 export function CarScrollTop() {
   const visible = useScrolled(600);
 

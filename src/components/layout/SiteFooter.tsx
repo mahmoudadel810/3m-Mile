@@ -17,10 +17,9 @@ const FOOTER_DESCRIPTION =
 /**
  * Site footer: description, four link columns, socials.
  *
- * The columns behave differently by breakpoint on the source site — hover dropdowns on
- * desktop, click accordions below 992px — so the submenu is a real <button> here and
- * gets both behaviours rather than the source's `onclick="toggleMobileMenu(...)"` inline
- * handler.
+ * The columns behave differently by breakpoint — hover dropdowns on desktop, click
+ * accordions below 992px — so each submenu toggle is a real <button> carrying both
+ * behaviours, rather than an inline onclick handler.
  */
 export function SiteFooter({
   social,

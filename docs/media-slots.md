@@ -1,7 +1,7 @@
 ### 5.1 Image / video slots
-Recommended px = 2× the reference CSS box at 1440, rounded; tolerance ±5 % on aspect; formats JPG/PNG/WEBP unless noted; "Where" is the render site; "Missing" is today's behaviour, kept unless noted.
+Recommended px = 2× the rendered CSS box at 1440, rounded; tolerance ±5 % on aspect; formats JPG/PNG/WEBP unless noted; "Where" is the render site; "Missing" is today's behaviour, kept unless noted.
 
-| Slot (resource.field) | Renders in | Ref box @1440 | **Aspect** | **Recommended px** | Min px | Max MB | Count | Missing |
+| Slot (resource.field) | Renders in | CSS box @1440 | **Aspect** | **Recommended px** | Min px | Max MB | Count | Missing |
 |---|---|---|---|---|---|---|---|---|
 | `settings.logo` | `SiteHeader` 130→100 wide | ~100×36 | **≥ 2:1 (landscape), target 3:1** | **600×200 PNG transparent** | 300×100 | 1 | 1 | site name as text |
 | `home.heroVideo` | `VideoHero` | 1100×570 | **1100:570 ≈ 1.93** (accept 16:9…2:1) | **2200×1140 MP4 H.264**, ≤ 60 s | 1100×570 | 50 | 1 | poster |
@@ -11,7 +11,7 @@ Recommended px = 2× the reference CSS box at 1440, rounded; tolerance ±5 % on 
 | `home.galleryTileImage` | `HeroGrid` tile 2 | 363×400 | 10:11 | 726×800 | 363×400 | 10 | 1 | tile hidden |
 | `home.trustImage0-2` | `TrustStrip` icon | 40×40 | 1:1 | 160×160 PNG/SVG, mono | 80×80 | 1 | 3 | built-in icon |
 | `home.whyUsImage` | `WhyUs` | **521×521** | **1:1** | **1042×1042** | 521×521 | 10 | 1 | placeholder box |
-| `reviews.image` | `ReviewCarousel` card | **479×347** | **11:8 (1.38)** | **958×694** (Google review screenshot) | 479×347 | 10 | ≥ 2 shown, 8 on ref | section hidden |
+| `reviews.image` | `ReviewCarousel` card | **479×347** | **11:8 (1.38)** | **958×694** (Google review screenshot) | 479×347 | 10 | ≥ 2 shown, 8 typical | section hidden |
 | `partners.logo` | `PartnerStrip` box | **128×85** | **3:2** | **384×256 PNG transparent** | 128×85 | 1 | ≥ 6 for a marquee | section hidden |
 | `blog-posts.coverImage` | `PostCard`, `LatestPosts` | 298×186 / 351×220 | 16:10 | 1120×700 | 560×350 | 10 | 1 | placeholder |
 | `products.images` | `ProductCard`, gallery | 353×265 | 4:3 | 1200×900 | 600×450 | 5 | ≤ 10 | placeholder |

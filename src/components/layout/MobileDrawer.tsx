@@ -14,13 +14,11 @@ import { safeHref } from '@/lib/safe';
 /**
  * 270px drawer sliding in from the inline-end edge.
  *
- * Geometry, easing and behaviour are the source site's: `right: -280px -> 0` over
- * 0.4s cubic-bezier(.77,.2,.05,1), a blurred scrim, tap-to-expand submenus, and the
- * drawer closing on any leaf-link tap. Expressed with logical properties so the
- * transform is direction-correct rather than hard-coded to RTL.
+ * Slides in over 0.4s cubic-bezier(.77,.2,.05,1) behind a blurred scrim, with
+ * tap-to-expand submenus and the drawer closing on any leaf-link tap. Expressed with
+ * logical properties so the transform is direction-correct rather than hard-coded to RTL.
  *
- * Added: focus trap, Escape, focus return, and `aria-expanded` — none of which the
- * source has.
+ * Carries a focus trap, Escape to close, focus return, and `aria-expanded`.
  */
 export function MobileDrawer({
   open,
@@ -66,9 +64,9 @@ export function MobileDrawer({
           'h-[100dvh] overflow-y-auto bg-surface-3 pt-15 pb-25',
           'shadow-[-5px_0_15px_rgb(0_0_0/0.5)]',
           'transition-transform duration-[400ms] ease-[var(--ease-drawer)]',
-          // Anchored to the inline-start edge — which is the physical right in RTL,
-          // matching the source's `right: -280px -> 0`. The closed transform has to
-          // push it toward that same physical edge, so the sign flips per direction.
+          // Anchored to the inline-start edge — which is the physical right in RTL. The
+          // closed transform has to push it toward that same physical edge, so the sign
+          // flips per direction.
           open ? 'translate-x-0' : 'rtl:translate-x-full ltr:-translate-x-full'
         )}
         style={{ insetInlineStart: 0, insetBlock: 0 }}

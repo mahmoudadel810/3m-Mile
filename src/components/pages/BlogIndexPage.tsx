@@ -8,8 +8,8 @@ import { Pagination } from '@/components/blog/Pagination';
 import { Reveal } from '@/components/ui/Reveal';
 
 /**
- * Blog index, nine per page to match the live site's pagination so no indexed URL changes.
- * The category strip is added so the archives are reachable from the index.
+ * Blog index, nine per page — fixed, so indexed pagination URLs never shift.
+ * The category strip makes the archives reachable from the index.
  */
 export async function BlogIndexPage({ page = 1 }: { page?: number }) {
   const [{ items, totalPages }, categories, blogIntro] = await Promise.all([

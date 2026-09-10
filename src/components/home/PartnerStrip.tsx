@@ -4,9 +4,9 @@ import type { HomeContent } from '@/data/home';
 /**
  * Partner logos — dealer and showroom marks.
  *
- * A CSS marquee matching the source's `.sp-slider-track`: card and gap geometry, travel
- * speed, hover pause. No JavaScript and no library, and it stops under reduced motion
- * (`data-loop-animation`, see `globals.css`).
+ * A pure CSS marquee: card and gap geometry, travel speed, hover pause. No JavaScript
+ * and no library, and it stops under reduced motion (`data-loop-animation`, see
+ * `globals.css`).
  *
  * The marquee only makes sense once there is enough content to loop — with fewer than
  * six logos the duplicated track would just repeat the same handful of logos with an
@@ -19,7 +19,7 @@ const PER_LOGO_PX = 180;
 /** One group must be wider than the strip (capped at 1100px) or the loop shows a gap. */
 const MIN_GROUP_PX = 1400;
 
-/** The source's speed: 19 logos (~3400px) in 40s. */
+/** Travel speed, tuned to read as a slow drift: ~3400px of logos in 40s. */
 const SPEED_PX_PER_SEC = 85;
 
 export function PartnerStrip({
@@ -33,7 +33,7 @@ export function PartnerStrip({
 }) {
   if (!partners.length) return null;
 
-  // Card geometry is the source's `.sp-card`: 130x100 on mobile, 160x120 from md up.
+  // Card geometry: 130x100 on mobile, 160x120 from md up.
   const boxClassName =
     'group flex h-[100px] w-[130px] shrink-0 items-center justify-center rounded-[20px] border border-[#333] bg-white p-[15px] shadow-[0_5px_15px_rgb(0_0_0/0.3)] transition-all duration-300 hover:-translate-y-[5px] hover:border-primary/50 hover:shadow-[0_10px_30px_rgb(227_27_35/0.5)] md:h-[120px] md:w-[160px]';
 

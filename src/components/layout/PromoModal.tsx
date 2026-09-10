@@ -13,8 +13,8 @@ import { resolveDelay } from '@/lib/promo/resolveDelay';
 /**
  * Timed promotional overlay.
  *
- * Suppression rules are the source's: never on the landing pages, thank-you page,
- * branches or info routes. The delay is one CMS value for the whole site
+ * Suppressed on the landing pages, thank-you page, branches and info routes — anywhere
+ * an overlay would interrupt a visitor mid-task. The delay is one CMS value for the site
  * (`Promo.delayMs`, default 3s via `resolveDelay`).
  *
  * The close button and offer link are keyboard-reachable, focus is trapped while open,
@@ -70,7 +70,7 @@ export function PromoModal({ promo, whatsappNumber }: { promo: Promo | null; wha
         aria-modal="true"
         aria-label={promo.alt}
         className={cn(
-          // Width matches the source; height is capped on the image so the rounded <a> is not clipped.
+          // Height is capped on the image so the rounded <a> is not clipped.
           'relative w-full max-w-[880px] transition-transform duration-300',
           open ? 'scale-100' : 'scale-95'
         )}

@@ -5,10 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Fires once when the element enters the viewport.
  *
- * This is the project's only scroll primitive. It replaces every scroll listener,
- * and it is the same technique the source site already uses to pause its hero slider
- * and lazy-load Elementor backgrounds — so it introduces no new concept, and no bytes
- * beyond the browser's own API.
+ * This is the project's only visibility primitive — reveals, counters, slider pausing and
+ * lazy backgrounds all go through it, so nothing hand-rolls a scroll listener. Costs no
+ * bytes beyond the browser's own API.
  */
 export function useInView<T extends HTMLElement = HTMLDivElement>(options?: {
   threshold?: number;

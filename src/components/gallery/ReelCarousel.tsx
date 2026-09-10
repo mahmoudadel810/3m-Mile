@@ -9,10 +9,9 @@ import { cn } from '@/lib/cn';
 /**
  * Vertical work reels.
  *
- * These are YouTube Shorts. The source loads the full YouTube iframe API up front for
- * all nine slides; here each slide is a facade — the thumbnail plus a play button — and
- * the iframe is only created for the reel the visitor actually starts. That removes
- * YouTube's ~600 KB of script from every visit to this page.
+ * These are YouTube Shorts. Each slide is a facade — the thumbnail plus a play button —
+ * and the iframe is only created for the reel the visitor actually starts. Loading the
+ * YouTube iframe API up front for all nine would add ~600 KB of script to every visit.
  *
  * Uses the shared carousel hook, so this drops Swiper (~40 KB) from the bundle.
  */

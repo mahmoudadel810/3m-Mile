@@ -8,7 +8,7 @@
  */
 
 /**
- * Matches the live site's format, e.g. `2026/08/07`, with Western digits. Returns '' for
+ * Post date format, e.g. `2026/08/07`, with Western digits. Returns '' for
  * a missing or unparseable date. UTC getters, so server and client render the same day.
  */
 export function formatPostDate(iso: string): string {

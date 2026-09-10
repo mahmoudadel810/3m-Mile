@@ -12,10 +12,9 @@ import { safeHref } from '@/lib/safe';
 /**
  * Photo gallery.
  *
- * Verified against the live site: there is no lightbox here. Each image links to a
- * related service page — it is an internal-linking device rather than a viewer. The
- * behaviour is preserved, but the affordance is made explicit with a hover label, since
- * the source gives no hint that clicking navigates away.
+ * Deliberately no lightbox. Each image links to a related service page — this is an
+ * internal-linking device rather than a viewer. Because clicking navigates away rather
+ * than zooming, a hover label makes that explicit instead of leaving it to be discovered.
  */
 export async function PhotoGalleryPage() {
   const [photos, sections, pageCopy, settings] = await Promise.all([

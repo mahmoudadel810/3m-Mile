@@ -8,15 +8,14 @@ import { Icon } from '@/components/ui/Icon';
 /**
  * Homepage video banner.
  *
- * Geometry is the source's: max-width 1100px, 570px tall at desktop (≥992px), 380 on
- * tablet, 200 on mobile, 10px radius, with a red CTA pinned to the lower inline-end
- * corner.
+ * Geometry: max-width 1100px, 570px tall at desktop (≥992px), 380 on tablet, 200 on
+ * mobile, 10px radius, with a red CTA pinned to the lower inline-end corner.
  *
- * Two fixes over the original:
- *  - the poster is regenerated from the video's own first frame, because the file the
- *    source preloads returns HTTP 410;
- *  - the video is a decorative autoplaying loop with no control of any kind, so a pause
- *    toggle is added and playback stops outright under reduced motion.
+ * Two things worth knowing:
+ *  - the poster is generated from the video's own first frame rather than uploaded
+ *    separately, so it can never go stale or 404;
+ *  - the video is a decorative autoplaying loop, so it carries a pause toggle and stops
+ *    outright under reduced motion.
  *
  * Without a video the poster renders as a plain `<img>`; without either, an empty panel.
  */

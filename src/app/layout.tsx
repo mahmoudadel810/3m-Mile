@@ -8,10 +8,9 @@ import { SiteChrome } from '@/components/layout/SiteChrome';
 import './globals.css';
 
 /**
- * Cairo is the entire type system on the source site — Arabic and Latin both.
- * next/font self-hosts it, which removes the Google Fonts round-trip the live site
- * still pays. The source also loads Alexandria and Arial for a handful of stray
- * elements; those are dropped deliberately.
+ * Cairo is the entire type system — Arabic and Latin both, so mixed strings render in
+ * one family. next/font self-hosts it, which removes the Google Fonts round-trip
+ * entirely. No second family is loaded anywhere.
  */
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],

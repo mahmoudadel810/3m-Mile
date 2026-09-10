@@ -10,12 +10,12 @@ import { jsonLdHtml, safeHref } from '@/lib/safe';
 /**
  * Branches: an interactive pin map above a flat, centred row of branch cards.
  *
- * Both the pins and the cards read from the same `branches` array. On the source these
- * are two hand-written copies of the same data, which is how one pin ended up with a
- * 9-digit phone number while its card had the correct 10.
+ * Both the pins and the cards read from the same `branches` array — never two copies of
+ * the same data, which is how a pin ends up with a 9-digit phone number while its card
+ * has the correct 10.
  *
- * Adds LocalBusiness structured data per branch — the source publishes none, so none of
- * the twelve locations can surface in local search results.
+ * Emits LocalBusiness structured data per branch, so each location can surface in local
+ * search results.
  */
 export async function BranchesPage() {
   const [branches, pageCopy] = await Promise.all([getBranches(), getPageCopy()]);
@@ -56,7 +56,7 @@ export async function BranchesPage() {
       </section>
 
       <section className="bg-ink pb-12">
-        {/* Flat wrapping row of equal-width cards, as on the source. */}
+        {/* Flat wrapping row of equal-width cards. */}
         <ul className="mx-auto flex w-[95%] max-w-[var(--container)] flex-wrap justify-center gap-6 text-center sm:gap-[50px]">
           {branches.map((b, i) => (
             <Reveal

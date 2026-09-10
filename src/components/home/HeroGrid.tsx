@@ -13,14 +13,13 @@ import { safeHref } from '@/lib/safe';
  * The homepage's signature block: three tiles — branches, work gallery, and a rotating
  * service slider.
  *
- * Layout is the source's, including its deliberate mobile re-composition: three columns
- * on desktop at 400px tall, two columns on mobile at 180px with the slider tile spanning
- * both and growing to 380px. That is intentional mobile design, not a shrink.
+ * The mobile layout is a deliberate re-composition, not a shrink: three columns on
+ * desktop at 400px tall, two columns on mobile at 180px with the slider tile spanning
+ * both and growing to 380px.
  *
  * The slider crossfades every 3s with an 0.8s opacity transition and pauses off-screen.
  *
- * Added: the tiles have no hover state at all on the source site — only the icon circles
- * react. A subtle image scale plus a gradient scrim keeps the red ribbon legible.
+ * On hover a subtle image scale plus a gradient scrim keeps the red ribbon legible.
  */
 export function HeroGrid({
   services: heroSliderServices,

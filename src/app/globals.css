@@ -5,8 +5,8 @@
 
 html {
   scroll-behavior: smooth;
-  /* The site keeps Western digits throughout (0561266685, 2026/08/07, 5.0) — the
-     reference theme ships a class to disable it. Preserve that. */
+  /* The site keeps Western digits throughout (0561266685, 2026/08/07, 5.0), including
+     inside Arabic copy. Do not switch this to Arabic-Indic numerals. */
   font-variant-numeric: lining-nums;
 }
 
@@ -21,7 +21,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Fixed header offset. The source hard-codes `padding-top: 90px`; we measure instead. */
+/* Fixed header offset — measured at runtime, never hard-coded. */
 body {
   padding-top: var(--header-height);
 }
@@ -31,7 +31,7 @@ body[data-scroll-locked='true'] {
   overflow: hidden;
 }
 
-/* The source site has no visible focus styling anywhere. */
+/* Visible focus ring — the only one on the site, so it has to be unmistakable. */
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 3px;
@@ -84,7 +84,7 @@ body[data-scroll-locked='true'] {
   50% { transform: rotate(25deg); }
 }
 
-/* Phone button wiggle — a slightly smaller arc on the source site. */
+/* Phone button wiggle — a slightly smaller arc than the WhatsApp one. */
 @keyframes fab-wiggle {
   0%,
   100% { transform: rotate(0deg); }
@@ -100,7 +100,7 @@ body[data-scroll-locked='true'] {
 /* --------------------------------------------------- floating buttons */
 
 :root {
-  /* Source: 25px desktop, 15px mobile, from each viewport's outer edge. */
+  /* 25px desktop, 15px mobile, from each viewport's outer edge. */
   --fab-inset: 15px;
   /* The car parks 120px beyond the inline-start edge while hidden. */
   --car-hidden-shift: translateX(145px);
@@ -118,8 +118,8 @@ body[data-scroll-locked='true'] {
 
 /*
  * Two exhaust plumes trailing the car. Kept in CSS rather than markup because they are
- * decorative pseudo-elements on the source site too — there is nothing here for a
- * screen reader to announce.
+ * purely decorative pseudo-elements — there is nothing here for a screen reader to
+ * announce.
  */
 .car-exhaust {
   position: absolute;
@@ -162,7 +162,7 @@ body[data-scroll-locked='true'] {
 
 /* ---------------------------------------------------------- marquee */
 /*
- * Partner logo strip, matching the source's `.sp-slider-track`. The track holds two
+ * Partner logo strip. The track holds two
  * identical groups and slides by one group plus one gap. One group must be wider than
  * this element or the loop shows bare background; `PartnerStrip` repeats the list to
  * guarantee that and sets `--marquee-duration` from the resulting width.
@@ -207,8 +207,8 @@ body[data-scroll-locked='true'] {
 }
 
 /* ------------------------------------------------------- scroll reveal */
-/* The one motion behaviour the source site lacks entirely: sections currently
-   just appear. Progressive — content is visible if JS never runs. */
+/* Sections fade and rise as they enter view. Progressive — content is fully visible
+   if JS never runs. */
 
 @media (prefers-reduced-motion: no-preference) {
   [data-reveal] {
@@ -257,8 +257,8 @@ body[data-scroll-locked='true'] {
  * Styling for CMS body HTML injected via dangerouslySetInnerHTML.
  *
  * The API sanitises the markup to a small tag allow-list, so these rules are what dress
- * it — in design-system tokens rather than per-article styles. The legacy class names
- * (.cb-*, .cs-ai-*, .sc_fs_faq, .rv-*) are kept so imported bodies still render.
+ * it — in design-system tokens rather than per-article styles. The extra class names
+ * (.cb-*, .cs-ai-*, .sc_fs_faq, .rv-*) are kept so existing article bodies still render.
  */
 .post-body {
   font-size: 1rem;
@@ -352,7 +352,7 @@ body[data-scroll-locked='true'] {
 }
 
 /*
- * Tables carry a fixed pixel `height` in the source that breaks them below 500px. The
+ * Pasted tables often carry a fixed pixel `height`, which breaks them below 500px. The
  * attribute is stripped; the wrapper here is what stops a wide table forcing the whole
  * page to scroll sideways on a phone.
  */

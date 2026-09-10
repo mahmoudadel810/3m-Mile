@@ -11,9 +11,8 @@ import { Icon } from '@/components/ui/Icon';
 /**
  * Services index — the hub linking to all eight detail pages.
  *
- * The source lays this out as four hand-built rows of two, each with its own heading and
- * button. It is one grid over the same `services` array the homepage and detail pages
- * use, so adding a ninth service is a data edit.
+ * One grid over the same `services` array the homepage and detail pages use, rather than
+ * hand-built rows — so adding a ninth service is a data edit, not a layout edit.
  */
 export async function ServicesPage() {
   const [services, sections, pageCopy, settings] = await Promise.all([

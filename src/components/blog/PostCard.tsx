@@ -5,8 +5,8 @@ import { formatPostDate } from '@/lib/format';
 import { Icon } from '@/components/ui/Icon';
 
 /**
- * One article card. Used by the blog index, the category archives and the related-posts
- * rail — the source has three separate card markups for those, already visually drifted.
+ * One article card, shared by the blog index, the category archives and the related-posts
+ * rail — one markup for all three, so they cannot drift apart visually.
  *
  * `priority` is passed for the first row only; everything below folds in lazily.
  */

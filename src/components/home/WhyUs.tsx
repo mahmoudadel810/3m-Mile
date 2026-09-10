@@ -8,11 +8,10 @@ import { Reveal } from '@/components/ui/Reveal';
  * Why-us block — heading and checklist beside a framed image.
  *
  * Desktop uses a two-row grid with named areas so the image spans both rows; below
- * 992px it becomes an explicitly ordered column (heading, image, list), which is the
- * source's own arrangement.
+ * 992px it becomes an explicitly ordered column (heading, image, list).
  *
- * The offset red frame that slides on hover is the section's signature detail and is
- * reproduced exactly: ::before moves from -10px to +8px over 0.3s.
+ * The offset red frame that slides on hover is the section's signature detail:
+ * ::before moves from -10px to +8px over 0.3s.
  */
 export function WhyUs({
   whyUs,

@@ -8,11 +8,11 @@ import { Icon } from '@/components/ui/Icon';
 /**
  * One template for all eight service pages.
  *
- * The source renders these as eight separate Elementor documents with identical widget
- * layouts, which is why their wording has already drifted apart. Layout lives here;
- * everything that differs lives in data/services.ts and data/service-content.ts.
+ * One layout for all eight rather than eight near-identical page builds, which is how
+ * their wording drifts apart. Layout lives here; everything that differs lives in
+ * data/services.ts and data/service-content.ts.
  *
- * Structure follows the original exactly:
+ * Structure:
  *   intro: copy + two credibility points beside a square hero, then a red CTA
  *   centred benefits headline
  *   three benefit blocks with icon and rule, beside a three-image collage, then a CTA

@@ -6,8 +6,7 @@ import { jsonLdHtml } from '@/lib/safe';
 
 /**
  * FAQ. The answers are rendered into the HTML and also emitted as FAQPage structured
- * data — the source has the same ten questions but publishes no schema for them, so
- * they cannot win a rich result today.
+ * data, which is what makes them eligible for a rich result.
  */
 export async function FaqPage() {
   const faq = await getFaq();

@@ -79,7 +79,7 @@ export function useCarousel({
     }, autoplay);
   }, [autoplay, maxIndex]);
 
-  // Touch swipe, 50px threshold — the source's value.
+  // Touch swipe, 50px threshold.
   const touchStart = useRef(0);
   const swipeHandlers = {
     onTouchStart: (e: React.TouchEvent) => {

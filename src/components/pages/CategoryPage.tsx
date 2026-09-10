@@ -8,9 +8,9 @@ import { Reveal } from '@/components/ui/Reveal';
 /**
  * A category archive — `/category/{slug}/`, paginated the same nine-per-page as the index.
  *
- * These archives exist on the live site and are linked from inside article bodies, but
- * nothing in the navigation reaches them. The sibling strip below the heading fixes that
- * without changing any URL.
+ * These archives are linked from inside article bodies, but nothing in the main
+ * navigation reaches them. The sibling strip below the heading fixes that without
+ * changing any URL.
  */
 export async function CategoryPage({ category, page = 1 }: { category: Category; page?: number }) {
   const [{ items, totalPages }, categories] = await Promise.all([

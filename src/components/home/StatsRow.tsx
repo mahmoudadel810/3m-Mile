@@ -7,9 +7,9 @@ import { useInView } from '@/hooks/useInView';
 /**
  * The three counters.
  *
- * Card hover — lift plus a red underline growing to 50% width — is the source's.
+ * Card hover: a lift plus a red underline growing to 50% width.
  *
- * Added: the numbers count up when the row enters view. They are the proof-point of the
+ * The numbers count up when the row enters view. They are the proof-point of the
  * whole section and rendering them as static text under-sells them. The final value is
  * always in the DOM for screen readers and for anyone with reduced motion.
  */

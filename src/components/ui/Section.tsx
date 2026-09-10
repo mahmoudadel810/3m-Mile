@@ -4,10 +4,9 @@ import { Container } from './Container';
 /**
  * Vertical rhythm wrapper.
  *
- * The source site's sections are deliberately tight — 10px on the trust strip, 20px on
- * stats and reviews, 40px on why-us. This is a dense page, not an airy one, and that
- * density is part of its character. These paddings mirror the measured values rather
- * than imposing a generic spacious scale.
+ * Section padding is deliberately tight — 10px on the trust strip, 20px on stats and
+ * reviews, 40px on why-us. This is a dense page, not an airy one, and that density is
+ * part of its character. Resist swapping these for a generic spacious scale.
  */
 const spacing = {
   tight: 'py-2.5', // 10px — trust strip
@@ -28,7 +27,7 @@ export function Section({
   id?: string;
   space?: keyof typeof spacing;
   container?: 'narrow' | 'base' | 'wide' | false;
-  /** Hairline top rule — the source uses this between stats and reviews. */
+  /** Hairline top rule — used between stats and reviews. */
   bordered?: boolean;
   className?: string;
   containerClassName?: string;

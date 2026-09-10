@@ -8,10 +8,9 @@ import { cn } from '@/lib/cn';
 /**
  * Product image viewer: one large image with thumbnails beneath it.
  *
- * The source uses a PhotoSwipe gallery, which pulls in ~40 kB of JavaScript
- * to show two images and a zoom overlay. Two images do not justify that, so this is a
- * plain state swap — no library, and the thumbnails are real buttons, which the
- * the source markup's `<div>`s are not.
+ * A plain state swap rather than a gallery library. PhotoSwipe and friends pull in
+ * ~40 kB of JavaScript to show two images and a zoom overlay, which two images do not
+ * justify. The thumbnails are real <button>s, so they are keyboard-reachable.
  */
 export function ProductGallery({ images, title }: { images: ProductImage[]; title: string }) {
   const [active, setActive] = useState(0);

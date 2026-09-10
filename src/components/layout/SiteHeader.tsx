@@ -16,8 +16,8 @@ import { cn } from '@/lib/cn';
 /**
  * Fixed glass header.
  *
- * Values are the source site's, exactly: rgba(0,0,0,.45) -> .5 background, 5px -> 20px
- * backdrop blur, 8px -> 12px padding, all over 0.3s, triggered at scrollY > 50.
+ * Scroll transition: rgba(0,0,0,.45) -> .5 background, 5px -> 20px backdrop blur,
+ * 8px -> 12px padding, all over 0.3s, triggered at scrollY > 50.
  *
  * Logo is height-bound (40px -> 32px), not width-bound: the logo slot only guarantees a
  * landscape shape, so bounding the height keeps any asset from growing the header.

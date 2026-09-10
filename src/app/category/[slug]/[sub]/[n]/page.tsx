@@ -40,9 +40,8 @@ export async function generateMetadata({
   return {
     title: `${category.name} — صفحة ${n}`,
     alternates: { canonical: encodeURI(`/category/${category.slug}/page/${n}`) },
-    // The live site serves `follow, index` on its paginated listings, and Google's own
-    // guidance is against noindex on pagination — it can drop the linked articles with it.
-    // Matched rather than "improved".
+    // Paginated listings stay indexable: Google's own guidance is against noindex on
+    // pagination, because it can drop the linked articles along with the listing page.
     robots: { index: true, follow: true },
   };
 }

@@ -4,12 +4,11 @@ import { mapBranch, type ApiBranch } from '@/lib/api/dto';
 /**
  * The branches, as one array.
  *
- * On the reference site this data exists TWICE — once as `data-*` attributes on the
- * map pins and once as hand-written list cards below — and the two copies had already
- * drifted: one pin carried a 9-digit phone while its card carried the correct 10-digit
- * one, so the call button on that pin dialled a broken number. One record per branch,
- * serving both the map and the cards, is what stops that class of bug recurring — and it
- * is now enforced by the data model rather than by discipline.
+ * ONE record per branch, serving both the map pins and the list cards below. Holding the
+ * same branch twice — once for the pins, once for the cards — is how a pin ends up
+ * dialling a 9-digit phone number while its card carries the correct 10-digit one. The
+ * single array makes that class of bug structurally impossible rather than a matter of
+ * discipline.
  *
  * API SEAM — `getBranches()` reads the CMS; the city grouping stays here because it is
  * presentation, not content.

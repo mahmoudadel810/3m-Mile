@@ -3,9 +3,10 @@ import { cn } from '@/lib/cn';
 /**
  * Hand-picked inline SVGs replacing Font Awesome 6 (Free + Brands).
  *
- * The source site loads two full icon-font families — roughly 70 KB gzipped plus a
- * render-blocking CDN stylesheet — to draw about forty glyphs. These are those glyphs.
- * Paths are traced from the same icons so the visual result is unchanged.
+ * Loading the two full icon-font families costs roughly 70 KB gzipped plus a
+ * render-blocking CDN stylesheet, to draw about forty glyphs. These are those forty
+ * glyphs, inlined — same shapes, none of the weight. Add new ones here rather than
+ * reaching for the font.
  */
 
 const paths = {

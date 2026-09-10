@@ -5,11 +5,11 @@ import { Icon, BrandIcon } from '@/components/ui/Icon';
 import { CarScrollTop } from './CarScrollTop';
 
 /**
- * The three fixed buttons the source site keeps on screen at all times: WhatsApp and
- * phone stacked at the inline-end edge, and the car scroll-to-top at the inline-start.
+ * Three buttons fixed on screen at all times: WhatsApp and phone stacked at the
+ * inline-end edge, and the car scroll-to-top at the inline-start.
  *
- * Both wiggle animations and the double pulse ring are reproduced exactly. They carry
- * `data-loop-animation` so reduced-motion stops them while leaving the buttons visible.
+ * Both wiggle animations and the double pulse ring carry `data-loop-animation`, so
+ * reduced-motion stops them while leaving the buttons visible.
  */
 export function FloatingActions({ phone, whatsappNumber }: { phone: string; whatsappNumber: string }) {
   return (

@@ -1,8 +1,8 @@
 import { cn } from '@/lib/cn';
 
 /**
- * The source site uses three container widths, all at `width: 95%`:
- * 1100px for most widgets, 1200px for the footer and reviews, 1400px for the header.
+ * Three container widths, all at `width: 95%` up to their max:
+ * 1100px for most sections, 1200px for the footer and reviews, 1400px for the header.
  */
 const widths = {
   narrow: 'max-w-[var(--container-narrow)]',

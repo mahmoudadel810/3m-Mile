@@ -5,9 +5,8 @@ import { useEffect, useState } from 'react';
 /**
  * True once the page has scrolled past `offset`.
  *
- * Mirrors the source site's own handler: a single passive listener throttled through
- * requestAnimationFrame, which is already the right implementation — worth copying
- * rather than replacing.
+ * A single passive listener throttled through requestAnimationFrame. Every scroll-driven
+ * component shares this one, so the page never accumulates handlers.
  */
 export function useScrolled(offset = 50) {
   const [scrolled, setScrolled] = useState(false);

@@ -6,8 +6,8 @@ import { cn } from '@/lib/cn';
 /**
  * Scroll-entrance wrapper.
  *
- * The source site has no entrance animation at all — sections simply appear. This is the
- * one genuinely missing piece of motion, and it costs nothing beyond IntersectionObserver.
+ * The one piece of motion on the page beyond hovers, and it costs nothing beyond
+ * IntersectionObserver.
  *
  * Two deliberate safeguards, because a reveal that fails leaves content invisible:
  *

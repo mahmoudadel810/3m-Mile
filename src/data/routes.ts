@@ -11,8 +11,7 @@
  * (`/probe/فروعنا` -> 200). So the app router uses `[slug]` and `[slug]/[sub]`, and this
  * file maps each Arabic path to its page component.
  *
- * The URLs are therefore identical to the live site — this is purely how the routes are
- * declared, not what visitors see.
+ * Visitors' URLs are unaffected — this is purely how the routes are declared internally.
  *
  * DELIBERATELY SYNCHRONOUS. `generateStaticParams` reads this at build time, so it must
  * not depend on the async data layer; page *content* is fetched separately by the page
@@ -78,7 +77,7 @@ export const findSubRoute = (slug: string, sub: string): RouteDef | undefined =>
 };
 
 /**
- * Legacy URLs still linked from the live site's own markup.
+ * Legacy URLs that may still be linked externally, redirected so nothing 404s.
  *
  * These live here rather than in `next.config.ts` because non-ASCII `redirects()`
  * sources fail to match, the same reason non-ASCII route directories do. Handled as

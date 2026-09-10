@@ -1,10 +1,9 @@
 /**
- * Design tokens. Every value here is measured from the reference site.
+ * Design tokens — the single source of truth for colour, type, spacing and motion.
  *
- * The source site has no design system: 32 unconnected <style> blocks each redeclare
- * their own scoped variables, and the brand red exists in five near-identical values
- * (#EB1C2B, #E31B23, #D5151E, #D71921, #FF0000). This file is the single source of
- * truth that replaces all of them.
+ * The brand red is fixed at one value here. Anything that needs a variant takes it from
+ * `--color-primary-strong` or `--color-primary-soft` rather than introducing a new hex,
+ * which is how near-identical duplicates creep in.
  */
 
 @theme {
@@ -72,9 +71,9 @@
   --ease-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   /* ----------------------------------------------------------- breakpoints */
-  /* The source uses seven inconsistent breakpoints (380/576/768/992/1024/1440) and
-     even collides at 768. Standardised to four; 992 is the load-bearing one, where
-     navigation switches between drawer and horizontal menu. */
+  /* Four breakpoints, deliberately; 992 is the load-bearing one, where navigation
+     switches between drawer and horizontal menu. Do not add a fifth — extra
+     breakpoints collide and the layout starts disagreeing with itself. */
   --breakpoint-sm: 576px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
@@ -92,15 +91,15 @@
   --header-blur: 5px;
   --header-blur-scrolled: 20px;
 
-  /* Measured from the real header rather than the source site's hard-coded
-     `body { padding-top: 90px }` guess. Updated at runtime by SiteHeader. This is only
-     now height-bound at 40px/32px, so the real header settles well under this). */
+  /* A starting value only — the real header is measured and republishes this at
+     runtime from SiteHeader, so the body offset never depends on a hard-coded guess.
+     The logo is height-bound at 40px/32px, so the header settles well under this. */
   --header-height: 64px;
 
   --overlay-scrim: rgb(0 0 0 / 0.4);
   --overlay-menu: rgb(0 0 0 / 0.6);
 
-  /* Container widths, all at width:95% on the source site. */
+  /* Container widths. All three render at width:95% up to their max. */
   --container-narrow: 1100px;
   --container: 1200px;
   --container-wide: 1400px;

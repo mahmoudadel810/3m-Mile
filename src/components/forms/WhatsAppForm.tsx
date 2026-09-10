@@ -46,7 +46,7 @@ export function WhatsAppForm({
   const set = (key: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setValues((v) => ({
       ...v,
-      // Digits only, matching the source's live input sanitising.
+      // Phone field is sanitised to digits as the visitor types.
       [key]: key === 'phone' ? e.target.value.replace(/[^0-9]/g, '') : e.target.value,
     }));
 
