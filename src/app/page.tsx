@@ -36,9 +36,7 @@ export default async function HomePage() {
   return (
     <main id="main">
       {/*
-        The visible page opens with the video banner, so the H1 is visually hidden —
-        exactly as on the source site (.cs-pro-h1-hidden). It still carries the page's
-        primary keyword for search and is the first thing a screen reader announces.
+     Primary keyword for search and is the first thing a screen reader announces.
       */}
       <h1 className="sr-only">{site.tagline}</h1>
 
