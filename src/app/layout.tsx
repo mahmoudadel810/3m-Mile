@@ -6,7 +6,6 @@ import { getSiteLogo, getSocialLinks, getSiteSettings } from "@/data/settings";
 import { getServices } from "@/data/services";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import Script from "next/script";
-// @ts-expect-error Next.js handles this global stylesheet import.
 import "./globals.css";
 
 /**
